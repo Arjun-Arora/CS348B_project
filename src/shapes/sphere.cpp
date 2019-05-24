@@ -30,7 +30,7 @@
 
  */
 
-
+//slight modification
 // shapes/sphere.cpp*
 #include "shapes/sphere.h"
 #include "sampling.h"
