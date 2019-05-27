@@ -41,6 +41,7 @@
 // core/spectrum.h*
 #include "pbrt.h"
 #include "stringprint.h"
+// #include "core/interaction.h"
 
 namespace pbrt {
 
@@ -280,6 +281,9 @@ class CoefficientSpectrum {
 
     // CoefficientSpectrum Public Data
     static const int nSamples = nSpectrumSamples;
+  // private:
+  //   SurfaceInteraction isect;
+
 
   protected:
     // CoefficientSpectrum Protected Data
@@ -430,6 +434,7 @@ class RGBSpectrum : public CoefficientSpectrum<3> {
     using CoefficientSpectrum<3>::c;
 
   public:
+
     // RGBSpectrum Public Methods
     RGBSpectrum(Float v = 0.f) : CoefficientSpectrum<3>(v) {}
     RGBSpectrum(const CoefficientSpectrum<3> &v) : CoefficientSpectrum<3>(v) {}
@@ -437,6 +442,7 @@ class RGBSpectrum : public CoefficientSpectrum<3> {
                 SpectrumType type = SpectrumType::Reflectance) {
         *this = s;
     }
+
     static RGBSpectrum FromRGB(const Float rgb[3],
                                SpectrumType type = SpectrumType::Reflectance) {
         RGBSpectrum s;
