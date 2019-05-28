@@ -36,14 +36,25 @@ class dummyDataset(Dataset):
 if __name__ =="__main__":
 	Dataset = dummyDataset(ch=3)
 	sample = Dataset[0]
-	target,model_input = sample['target'],sample['input']
+	target,model_input = sample['target'],np.expand_dims(sample['input'],0)
+	N,C,H,W = model_input.shape
+	net = MW_Unet(in_ch=C)
+	output = net(torch.Tensor(model_input))
+	output = output.squeeze(0).detach().numpy().transpose(2,1,0)
+	output = (255 * (output-np.min(output))/np.ptp(output)).astype(int)
+	print(output.dtype)
+	#print(np.ptp(output,axis=2))
+
+	#print(output[:,0,1:10,1:10])
 	#fig = plt.figure()
-	fig,ax  = plt.subplots(2)
+	fig,ax  = plt.subplots(3)
 	fig.subplots_adjust(hspace=0.5)
 	ax[0].set_title('target')
 	ax[0].imshow(target.transpose(2,1,0))
 	ax[1].set_title('input')
-	ax[1].imshow(model_input.transpose(2,1,0))
+	ax[1].imshow(model_input.squeeze(0).transpose(2,1,0))
+	ax[2].set_title('output')
+	ax[2].imshow(output)
 	plt.show()
 
 
