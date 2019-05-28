@@ -46,7 +46,7 @@ class MW_Unet(nn.Module):
         return output
 if __name__ == "__main__":
     print("testing MW_Unet")
-    X = torch.randn(10, 4, 64, 64)
+    X = torch.randn(10, 5, 64, 64)
     N, C, H, W = X.shape
 
     Unet = MW_Unet(in_ch=C)
