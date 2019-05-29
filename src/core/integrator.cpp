@@ -42,6 +42,7 @@
 #include "progressreporter.h"
 #include "camera.h"
 #include "stats.h"
+#include <fstream>
 
 namespace pbrt {
 
@@ -228,13 +229,13 @@ std::unique_ptr<Distribution1D> ComputeLightPowerDistribution(
 void SamplerIntegrator::Render(const Scene &scene) {
     Preprocess(scene, *sampler);
     // Render image tiles in parallel
-
     // Compute number of tiles, _nTiles_, to use for parallel rendering
     Bounds2i sampleBounds = camera->film->GetSampleBounds();
     Vector2i sampleExtent = sampleBounds.Diagonal();
     const int tileSize = 16;
     Point2i nTiles((sampleExtent.x + tileSize - 1) / tileSize,
                    (sampleExtent.y + tileSize - 1) / tileSize);
+    std::vector<std::vector<std::vector<double> > > normals(sampleExtent.x, std::vector<std::vector<double> >(sampleExtent.y, std::vector<double>(2, 0.0)));
     ProgressReporter reporter(nTiles.x * nTiles.y, "Rendering");
     {
         ParallelFor2D([&](Point2i tile) {
@@ -272,7 +273,8 @@ void SamplerIntegrator::Render(const Scene &scene) {
                 // debugging.
                 if (!InsideExclusive(pixel, pixelBounds))
                     continue;
-
+                Float normalX = 0.0, normalY = 0.0;
+                int numSamples = 0;
                 do {
                     // Initialize _CameraSample_ for current sample
                     CameraSample cameraSample =
@@ -289,7 +291,12 @@ void SamplerIntegrator::Render(const Scene &scene) {
                     // Evaluate radiance along camera ray
                     Spectrum L(0.f);
                     SurfaceInteraction interac;
-                    if (rayWeight > 0) L = Li(ray, scene, *tileSampler, arena,0,&interac);
+                    if (rayWeight > 0) {
+                        L = Li(ray, scene, *tileSampler, arena,0,&interac);
+                        normalX += interac.shading.n.x;
+                        normalY += interac.shading.n.y;
+                        numSamples++;
+                    }
 
                     // Issue warning if unexpected radiance value returned
                     if (L.HasNaNs()) {
@@ -324,6 +331,11 @@ void SamplerIntegrator::Render(const Scene &scene) {
                     // value
                     arena.Reset();
                 } while (tileSampler->StartNextSample());
+
+                normalX /= numSamples;
+                normalY /= numSamples;
+                normals[pixel.x][pixel.y][0] = normalX;
+                normals[pixel.x][pixel.y][1] = normalY;
             }
             LOG(INFO) << "Finished image tile " << tileBounds;
 
@@ -334,6 +346,21 @@ void SamplerIntegrator::Render(const Scene &scene) {
         reporter.Done();
     }
     LOG(INFO) << "Rendering finished";
+
+    std::ofstream foutx("normals_map_x.txt");
+    for (int i = 0; i < sampleExtent.x; i++) {
+        for (int j = 0; j < sampleExtent.y; j++)
+            foutx << normals[i][j][0] << " ";
+        foutx << "\n";
+    }
+    foutx.close();
+    std::ofstream fouty("normals_map_y.txt");
+    for (int i = 0; i < sampleExtent.x; i++) {
+        for (int j = 0; j < sampleExtent.y; j++)
+            fouty << normals[i][j][1] << " ";
+        fouty << "\n";
+    }
+    fouty.close();
 
     // Save final image after rendering
     camera->film->WriteImage();

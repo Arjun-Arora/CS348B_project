@@ -182,6 +182,10 @@ Spectrum PathIntegrator::Li(const RayDifferential &r, const Scene &scene,
             beta /= 1 - q;
             DCHECK(!std::isinf(beta.y()));
         }
+
+        if (bounces == 0 && foundIntersection) {
+            *interac = isect;
+        }
     }
     ReportValue(pathLength, bounces);
     return L;
