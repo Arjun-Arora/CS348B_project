@@ -288,7 +288,8 @@ void SamplerIntegrator::Render(const Scene &scene) {
 
                     // Evaluate radiance along camera ray
                     Spectrum L(0.f);
-                    if (rayWeight > 0) L = Li(ray, scene, *tileSampler, arena);
+                    SurfaceInteraction interac;
+                    if (rayWeight > 0) L = Li(ray, scene, *tileSampler, arena,0,&interac);
 
                     // Issue warning if unexpected radiance value returned
                     if (L.HasNaNs()) {

@@ -41,8 +41,9 @@ if __name__ =="__main__":
 	net = MW_Unet(in_ch=C)
 	output = net(torch.Tensor(model_input))
 	output = output.squeeze(0).detach().numpy().transpose(2,1,0)
+
 	output = (255 * (output-np.min(output))/np.ptp(output)).astype(int)
-	print(output.dtype)
+	#print(output.dtype)
 	#print(np.ptp(output,axis=2))
 
 	#print(output[:,0,1:10,1:10])
