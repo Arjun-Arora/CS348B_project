@@ -43,6 +43,7 @@
 #include "camera.h"
 #include "stats.h"
 #include <fstream>
+#include "transform.h"
 
 namespace pbrt {
 
@@ -231,6 +232,8 @@ void SamplerIntegrator::Render(const Scene &scene) {
     // Render image tiles in parallel
     // Compute number of tiles, _nTiles_, to use for parallel rendering
     Bounds2i sampleBounds = camera->film->GetSampleBounds();
+
+    //get depth and albedo
     Vector2i sampleExtent = sampleBounds.Diagonal();
     const int tileSize = 16;
     Point2i nTiles((sampleExtent.x + tileSize - 1) / tileSize,

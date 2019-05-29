@@ -39,6 +39,7 @@
 #include "paramset.h"
 #include "scene.h"
 #include "stats.h"
+#include "transform.h"
 
 namespace pbrt {
 
@@ -77,6 +78,7 @@ Spectrum PathIntegrator::Li(const RayDifferential &r, const Scene &scene,
     // avoid terminating refracted rays that are about to be refracted back
     // out of a medium and thus have their beta value increased.
     Float etaScale = 1;
+    AnimatedTransform CameraToWorld = camera->CameraToWorld;
 
     for (bounces = 0;; ++bounces) {
         // Find next path vertex and accumulate contribution
@@ -184,6 +186,9 @@ Spectrum PathIntegrator::Li(const RayDifferential &r, const Scene &scene,
         }
 
         if (bounces == 0 && foundIntersection) {
+            Transform currCameraToWorld;
+            CameraToWorld.Interpolate(ray.time,&currCameraToWorld);
+            isect.shading.n = Inverse(currCameraToWorld)(isect.shading.n);
             *interac = isect;
         }
     }
