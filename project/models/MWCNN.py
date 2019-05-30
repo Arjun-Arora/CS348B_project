@@ -79,6 +79,7 @@ class IWCNN(nn.Module):
 if __name__ == "__main__":
     print("testing WCNN")
     X = torch.randn(10, 128, 64, 64)
+    print(X.dtype)
     N, C, H, W = X.shape
     cnn = WCNN(C, out_ch=4 * C, num_conv=1)
     cnn_2 = WCNN(4 * C, out_ch=16 * C)
