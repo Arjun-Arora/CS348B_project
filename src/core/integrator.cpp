@@ -31,6 +31,7 @@
  */
 
 // core/integrator.cpp*
+#include "bssrdf.h"
 #include "integrator.h"
 #include "scene.h"
 #include "interaction.h"
@@ -238,7 +239,10 @@ void SamplerIntegrator::Render(const Scene &scene) {
     const int tileSize = 16;
     Point2i nTiles((sampleExtent.x + tileSize - 1) / tileSize,
                    (sampleExtent.y + tileSize - 1) / tileSize);
-    std::vector<std::vector<std::vector<double> > > normals(sampleExtent.x, std::vector<std::vector<double> >(sampleExtent.y, std::vector<double>(2, 0.0)));
+    
+    std::vector<std::vector<std::vector<double> > > info(sampleExtent.x, std::vector<std::vector<double> >(sampleExtent.y, std::vector<double>(3, 0.0)));
+    std::vector<std::vector<std::vector<double> > > albedo(sampleExtent.x, std::vector<std::vector<double> >(sampleExtent.y, std::vector<double>(3, 0.0)));
+    
     ProgressReporter reporter(nTiles.x * nTiles.y, "Rendering");
     {
         ParallelFor2D([&](Point2i tile) {
@@ -276,7 +280,8 @@ void SamplerIntegrator::Render(const Scene &scene) {
                 // debugging.
                 if (!InsideExclusive(pixel, pixelBounds))
                     continue;
-                Float normalX = 0.0, normalY = 0.0;
+                Float normalX = 0.0, normalY = 0.0, depth = 0.0;
+                Float rgb[3] = {0.0, 0.0, 0.0};
                 int numSamples = 0;
                 do {
                     // Initialize _CameraSample_ for current sample
@@ -298,6 +303,9 @@ void SamplerIntegrator::Render(const Scene &scene) {
                         L = Li(ray, scene, *tileSampler, arena,0,&interac);
                         normalX += interac.shading.n.x;
                         normalY += interac.shading.n.y;
+                        depth += interac.p.z;
+                        for (int c = 0; c < 3; c++)
+                            rgb[c] += interac.bssrdf->rho[c];
                         numSamples++;
                     }
 
@@ -337,8 +345,14 @@ void SamplerIntegrator::Render(const Scene &scene) {
 
                 normalX /= numSamples;
                 normalY /= numSamples;
-                normals[pixel.x][pixel.y][0] = normalX;
-                normals[pixel.x][pixel.y][1] = normalY;
+                depth /= numSamples;
+                for (int c = 0; c < 3; c++)
+                    rgb[c] /= numSamples;
+                info[pixel.x][pixel.y][0] = normalX;
+                info[pixel.x][pixel.y][1] = normalY;
+                info[pixel.x][pixel.y][2] = depth;
+                for (int c = 0; c < 3; c++)
+                    albedo[pixel.x][pixel.y][c] = rgb[c];
             }
             LOG(INFO) << "Finished image tile " << tileBounds;
 
@@ -353,17 +367,32 @@ void SamplerIntegrator::Render(const Scene &scene) {
     std::ofstream foutx("normals_map_x.txt");
     for (int i = 0; i < sampleExtent.x; i++) {
         for (int j = 0; j < sampleExtent.y; j++)
-            foutx << normals[i][j][0] << " ";
+            foutx << info[i][j][0] << " ";
         foutx << "\n";
     }
     foutx.close();
     std::ofstream fouty("normals_map_y.txt");
     for (int i = 0; i < sampleExtent.x; i++) {
         for (int j = 0; j < sampleExtent.y; j++)
-            fouty << normals[i][j][1] << " ";
+            fouty << info[i][j][1] << " ";
         fouty << "\n";
     }
     fouty.close();
+    std::ofstream foutdepth("depth_map.txt");
+    for (int i = 0; i < sampleExtent.x; i++) {
+        for (int j = 0; j < sampleExtent.y; j++)
+            foutdepth << info[i][j][2] << " ";
+        foutdepth << "\n";
+    }
+    foutdepth.close();
+    std::ofstream foutalbedo("albedo.txt");
+    for (int i = 0; i < sampleExtent.x; i++) {
+        for (int j = 0; j < sampleExtent.y; j++)
+            foutalbedo << "[" << albedo[i][j][0] << " " << albedo[i][j][1] << " " << albedo[i][j][2] << "] ";
+        foutalbedo << "\n";
+    }
+    foutalbedo.close();
+
 
     // Save final image after rendering
     camera->film->WriteImage();
