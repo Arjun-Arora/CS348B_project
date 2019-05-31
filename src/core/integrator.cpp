@@ -303,14 +303,17 @@ void SamplerIntegrator::Render(const Scene &scene) {
                         L = Li(ray, scene, *tileSampler, arena,0,&interac);
                         normalX += interac.shading.n.x;
                         normalY += interac.shading.n.y;
-                        depth += interac.depth;
+                        depth += interac.p.z;//Vector3f(interac.p).Length();
                         // BSDF::rho(const Vector3f &woWorld, int nSamples, const Point2f *samples,
                         // BxDFType flags)
                         //-ray direction, 1,  random sample
                         CameraSample newSample = tileSampler->GetCameraSample(pixel);
-                        Spectrum rho = Spectrum(0.0);
+                        Spectrum rho = Spectrum(128);
                         if (interac.bsdf != nullptr){
-                            rho = interac.bsdf->rho(-ray.d,1,&cameraSample.pFilm);
+                            // rho = interac.bsdf->rho(-ray.d,1,&newSample.pFilm);
+                            rho = interac.bsdf->rho(interac.wo,1,&newSample.pFilm);
+                        } else {
+                            //std::cout << "hit nullptr\n";
                         }
                         for (int c = 0; c < 3; c++)
                             rgb[c] += rho[c];

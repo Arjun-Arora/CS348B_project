@@ -187,10 +187,11 @@ Spectrum PathIntegrator::Li(const RayDifferential &r, const Scene &scene,
 
         if (bounces == 0 && foundIntersection) {
             Transform currCameraToWorld;
-            CameraToWorld.Interpolate(ray.time,&currCameraToWorld);
+            CameraToWorld.Interpolate(isect.time,&currCameraToWorld);
             isect.shading.n = Inverse(currCameraToWorld)(isect.shading.n);
-            Point3f d = Inverse(currCameraToWorld)(isect.p);
-            isect.depth = d.z;
+            isect.p = Inverse(currCameraToWorld)(isect.p);
+            //Point3f cam = Inverse(currCameraToWorld)(Point3f(-2.8, 1.8, 4.9));
+            //std::cout << cam.x << " " << cam.y << " " << cam.z << "\n";
             *interac = isect;
         }
     }
