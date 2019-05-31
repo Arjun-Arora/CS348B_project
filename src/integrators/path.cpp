@@ -40,6 +40,8 @@
 #include "scene.h"
 #include "stats.h"
 #include "transform.h"
+#include <algorithm>
+#include <cstring>
 
 namespace pbrt {
 
@@ -187,11 +189,15 @@ Spectrum PathIntegrator::Li(const RayDifferential &r, const Scene &scene,
 
         if (bounces == 0 && foundIntersection) {
             Transform currCameraToWorld;
-            CameraToWorld.Interpolate(isect.time,&currCameraToWorld);
+            Float t = std::min(CameraToWorld.endTime, std::max(CameraToWorld.startTime, isect.time));
+            CameraToWorld.Interpolate(t,&currCameraToWorld);
             isect.shading.n = Inverse(currCameraToWorld)(isect.shading.n);
             isect.p = Inverse(currCameraToWorld)(isect.p);
-            //Point3f cam = Inverse(currCameraToWorld)(Point3f(-2.8, 1.8, 4.9));
-            //std::cout << cam.x << " " << cam.y << " " << cam.z << "\n";
+            
+            CameraSample newSample = sampler.GetCameraSample(interac->pixel);
+            isect.rho = isect.bsdf->rho(isect.wo, 1, &newSample.pFilm);
+            if (interac->pixel.x == 20 && interac->pixel.y == 1)
+                std::cout << isect.rho[0] << " " << isect.rho[1] << " " << isect.rho[2] << std::endl;
             *interac = isect;
         }
     }

@@ -149,6 +149,8 @@ class SurfaceInteraction : public Interaction {
     BSSRDF *bssrdf = nullptr;
     mutable Vector3f dpdx, dpdy;
     mutable Float dudx = 0, dvdx = 0, dudy = 0, dvdy = 0;
+    Point2i pixel;
+    Spectrum rho;
 
     // Added after book publication. Shapes can optionally provide a face
     // index with an intersection point for use in Ptex texture lookups.
