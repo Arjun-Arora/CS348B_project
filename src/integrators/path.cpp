@@ -189,7 +189,8 @@ Spectrum PathIntegrator::Li(const RayDifferential &r, const Scene &scene,
             Transform currCameraToWorld;
             CameraToWorld.Interpolate(ray.time,&currCameraToWorld);
             isect.shading.n = Inverse(currCameraToWorld)(isect.shading.n);
-            isect.p = Inverse(currCameraToWorld)(isect.p);
+            Point3f d = Inverse(currCameraToWorld)(isect.p);
+            isect.depth = d.z;
             *interac = isect;
         }
     }

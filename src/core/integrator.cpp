@@ -303,9 +303,17 @@ void SamplerIntegrator::Render(const Scene &scene) {
                         L = Li(ray, scene, *tileSampler, arena,0,&interac);
                         normalX += interac.shading.n.x;
                         normalY += interac.shading.n.y;
-                        depth += interac.p.z;
+                        depth += interac.depth;
+                        // BSDF::rho(const Vector3f &woWorld, int nSamples, const Point2f *samples,
+                        // BxDFType flags)
+                        //-ray direction, 1,  random sample
+                        CameraSample newSample = tileSampler->GetCameraSample(pixel);
+                        Spectrum rho = Spectrum(0.0);
+                        if (interac.bsdf != nullptr){
+                            rho = interac.bsdf->rho(-ray.d,1,&cameraSample.pFilm);
+                        }
                         for (int c = 0; c < 3; c++)
-                            rgb[c] += interac.bssrdf->rho[c];
+                            rgb[c] += rho[c];
                         numSamples++;
                     }
 
@@ -388,8 +396,10 @@ void SamplerIntegrator::Render(const Scene &scene) {
     std::ofstream foutalbedo("albedo.txt");
     for (int i = 0; i < sampleExtent.x; i++) {
         for (int j = 0; j < sampleExtent.y; j++)
-            foutalbedo << "[" << albedo[i][j][0] << " " << albedo[i][j][1] << " " << albedo[i][j][2] << "] ";
+            foutalbedo << " " << albedo[i][j][0] << "," << albedo[i][j][1] << "," << albedo[i][j][2] << " ";
         foutalbedo << "\n";
+
+
     }
     foutalbedo.close();
 
