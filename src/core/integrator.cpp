@@ -280,9 +280,11 @@ void SamplerIntegrator::Render(const Scene &scene) {
                 // debugging.
                 if (!InsideExclusive(pixel, pixelBounds))
                     continue;
+                float eps = 1e-6;
                 Float normalX = 0.0, normalY = 0.0, depth = 0.0;
                 Float rgb[3] = {0.0, 0.0, 0.0};
                 int numSamples = 0;
+                float bsdfSamples = 0 + eps; 
                 do {
                     // Initialize _CameraSample_ for current sample
                     CameraSample cameraSample =
@@ -308,15 +310,19 @@ void SamplerIntegrator::Render(const Scene &scene) {
                         // BxDFType flags)
                         //-ray direction, 1,  random sample
                         CameraSample newSample = tileSampler->GetCameraSample(pixel);
-                        Spectrum rho = Spectrum(128);
                         if (interac.bsdf != nullptr){
+                            Spectrum rho;
+                            bsdfSamples++;
                             // rho = interac.bsdf->rho(-ray.d,1,&newSample.pFilm);
                             rho = interac.bsdf->rho(interac.wo,1,&newSample.pFilm);
+                            for (int c = 0; c < 3; c++){
+                                rgb[c] += rho[c];
+                            }
                         } else {
                             //std::cout << "hit nullptr\n";
                         }
-                        for (int c = 0; c < 3; c++)
-                            rgb[c] += rho[c];
+                        // for (int c = 0; c < 3; c++)
+                        //     rgb[c] += rho[c];
                         numSamples++;
                     }
 
@@ -358,7 +364,7 @@ void SamplerIntegrator::Render(const Scene &scene) {
                 normalY /= numSamples;
                 depth /= numSamples;
                 for (int c = 0; c < 3; c++)
-                    rgb[c] /= numSamples;
+                    rgb[c] /= bsdfSamples;
                 info[pixel.x][pixel.y][0] = normalX;
                 info[pixel.x][pixel.y][1] = normalY;
                 info[pixel.x][pixel.y][2] = depth;
