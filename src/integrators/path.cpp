@@ -188,17 +188,18 @@ Spectrum PathIntegrator::Li(const RayDifferential &r, const Scene &scene,
         }
 
         if (bounces == 0 && foundIntersection) {
-            Transform currCameraToWorld;
-            Float t = std::min(CameraToWorld.endTime, std::max(CameraToWorld.startTime, isect.time));
-            CameraToWorld.Interpolate(t,&currCameraToWorld);
+            Transform currCameraToWorld = *CameraToWorld.startTransform;
+            // Float t = std::min(CameraToWorld.endTime, std::max(CameraToWorld.startTime, isect.time));
+            // CameraToWorld.Interpolate(t,&currCameraToWorld);
+            // Point3f norm = Point3f(isect.shading.n.x, isect.shading.n.y, isect.shading.n.z);
             isect.shading.n = Inverse(currCameraToWorld)(isect.shading.n);
             isect.p = Inverse(currCameraToWorld)(isect.p);
-            
-            //CameraSample newSample = sampler.GetCameraSample(interac->pixel);
+            // Point3f cam = (Inverse(currCameraToWorld)(Ray(Point3f(-2.8, 1.8, 4.9), Vector3f(1, 1, 1)))).o;
+            // Point3f cam = currCameraToWorld(Point3f());
+            // std::cout << cam.x << " " << cam.y << " " << cam.z << std::endl;
+
             Point2f sample = sampler.Get2D();
             isect.rho = isect.bsdf->rho(isect.wo, 1, &sample);
-            if (interac->pixel.x == 20 && interac->pixel.y == 1)
-                std::cout << isect.rho[0] << " " << isect.rho[1] << " " << isect.rho[2] << std::endl;
             *interac = isect;
         }
     }

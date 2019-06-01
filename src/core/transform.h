@@ -427,10 +427,10 @@ class AnimatedTransform {
     Bounds3f MotionBounds(const Bounds3f &b) const;
     Bounds3f BoundPointMotion(const Point3f &p) const;
     const Float startTime, endTime;
+    const Transform *startTransform, *endTransform;
 
   private:
     // AnimatedTransform Private Data
-    const Transform *startTransform, *endTransform;
     const bool actuallyAnimated;
     Vector3f T[2];
     Quaternion R[2];
