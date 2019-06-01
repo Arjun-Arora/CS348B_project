@@ -285,6 +285,7 @@ void SamplerIntegrator::Render(const Scene &scene) {
                 Float rgb[3] = {0.0, 0.0, 0.0};
                 int numSamples = 0;
                 float bsdfSamples = 0 + eps; 
+                float depthSamples = 0 + eps; 
                 do {
                     // Initialize _CameraSample_ for current sample
                     CameraSample cameraSample =
@@ -304,9 +305,15 @@ void SamplerIntegrator::Render(const Scene &scene) {
                     interac.pixel = pixel;
                     if (rayWeight > 0) {
                         L = Li(ray, scene, *tileSampler, arena,0,&interac);
+                        //std::cout << " vs: " << interac.p.x << " "  << interac.p.y << " " << interac.p.z;
                         normalX += interac.shading.n.x;
                         normalY += interac.shading.n.y;
-                        depth += interac.p.z;
+                        if (interac.p.z >= (0 + eps)){
+                            depth += interac.p.z;
+                            depthSamples++;
+
+                        } 
+                        //std::cout << interac.p.z << "\n";
                         for (int c = 0; c < 3; c++){
                             rgb[c] += interac.rho[c];
                         }
@@ -349,7 +356,7 @@ void SamplerIntegrator::Render(const Scene &scene) {
 
                 normalX /= numSamples;
                 normalY /= numSamples;
-                depth /= numSamples;
+                depth /= depthSamples;
                 for (int c = 0; c < 3; c++)
                     rgb[c] /= numSamples;
                 info[pixel.x][pixel.y][0] = normalX;

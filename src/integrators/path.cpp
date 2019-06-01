@@ -192,14 +192,19 @@ Spectrum PathIntegrator::Li(const RayDifferential &r, const Scene &scene,
             // Float t = std::min(CameraToWorld.endTime, std::max(CameraToWorld.startTime, isect.time));
             // CameraToWorld.Interpolate(t,&currCameraToWorld);
             // Point3f norm = Point3f(isect.shading.n.x, isect.shading.n.y, isect.shading.n.z);
+
+            Point2f sample = sampler.Get2D();
+            isect.rho = isect.bsdf->rho(isect.wo, 1, &sample);
+
             isect.shading.n = Inverse(currCameraToWorld)(isect.shading.n);
-            isect.p = Inverse(currCameraToWorld)(isect.p);
+            Transform WorldTocurrCamera = Inverse(currCameraToWorld);
+            isect.p = WorldTocurrCamera(isect.p);
+            //std::cout << isect.p.x << " "  << isect.p.y << " " << isect.p.z;
+
             // Point3f cam = (Inverse(currCameraToWorld)(Ray(Point3f(-2.8, 1.8, 4.9), Vector3f(1, 1, 1)))).o;
             // Point3f cam = currCameraToWorld(Point3f());
             // std::cout << cam.x << " " << cam.y << " " << cam.z << std::endl;
 
-            Point2f sample = sampler.Get2D();
-            isect.rho = isect.bsdf->rho(isect.wo, 1, &sample);
             *interac = isect;
         }
     }
