@@ -194,8 +194,9 @@ Spectrum PathIntegrator::Li(const RayDifferential &r, const Scene &scene,
             isect.shading.n = Inverse(currCameraToWorld)(isect.shading.n);
             isect.p = Inverse(currCameraToWorld)(isect.p);
             
-            CameraSample newSample = sampler.GetCameraSample(interac->pixel);
-            isect.rho = isect.bsdf->rho(isect.wo, 1, &newSample.pFilm);
+            //CameraSample newSample = sampler.GetCameraSample(interac->pixel);
+            Point2f sample = sampler.Get2D();
+            isect.rho = isect.bsdf->rho(isect.wo, 1, &sample);
             if (interac->pixel.x == 20 && interac->pixel.y == 1)
                 std::cout << isect.rho[0] << " " << isect.rho[1] << " " << isect.rho[2] << std::endl;
             *interac = isect;
