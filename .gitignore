@@ -4,5 +4,4 @@ src/bin
 src/objs
 .sconsign.dblite
 project/pbrtBuild
-*.exr
-*.png
+.DS_Store

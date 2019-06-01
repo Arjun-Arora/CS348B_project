@@ -280,12 +280,9 @@ void SamplerIntegrator::Render(const Scene &scene) {
                 // debugging.
                 if (!InsideExclusive(pixel, pixelBounds))
                     continue;
-                float eps = 1e-6;
                 Float normalX = 0.0, normalY = 0.0, depth = 0.0;
                 Float rgb[3] = {0.0, 0.0, 0.0};
-                int numSamples = 0;
-                float bsdfSamples = 0 + eps; 
-                float depthSamples = 0 + eps; 
+                int numSamples = 0; 
                 do {
                     // Initialize _CameraSample_ for current sample
                     CameraSample cameraSample =
@@ -304,20 +301,16 @@ void SamplerIntegrator::Render(const Scene &scene) {
                     SurfaceInteraction interac;
                     interac.pixel = pixel;
                     if (rayWeight > 0) {
-                        L = Li(ray, scene, *tileSampler, arena,0,&interac);
-                        //std::cout << " vs: " << interac.p.x << " "  << interac.p.y << " " << interac.p.z;
-                        normalX += interac.shading.n.x;
-                        normalY += interac.shading.n.y;
-                        if (interac.p.z >= (0 + eps)){
+                        L = Li(ray, scene, *tileSampler, arena, 0, &interac);
+                        if (interac.intersect) {
+                            normalX += interac.shading.n.x;
+                            normalY += interac.shading.n.y;
                             depth += interac.p.z;
-                            depthSamples++;
-
-                        } 
-                        //std::cout << interac.p.z << "\n";
-                        for (int c = 0; c < 3; c++){
-                            rgb[c] += interac.rho[c];
+                            for (int c = 0; c < 3; c++){
+                                rgb[c] += interac.rho[c];
+                            }
+                            numSamples++;
                         }
-                        numSamples++;
                     }
 
                     // Issue warning if unexpected radiance value returned
@@ -354,16 +347,11 @@ void SamplerIntegrator::Render(const Scene &scene) {
                     arena.Reset();
                 } while (tileSampler->StartNextSample());
 
-                normalX /= numSamples;
-                normalY /= numSamples;
-                depth /= depthSamples;
+                info[pixel.x][pixel.y][0] = normalX/numSamples;
+                info[pixel.x][pixel.y][1] = normalY/numSamples;
+                info[pixel.x][pixel.y][2] = depth/numSamples;
                 for (int c = 0; c < 3; c++)
-                    rgb[c] /= numSamples;
-                info[pixel.x][pixel.y][0] = normalX;
-                info[pixel.x][pixel.y][1] = normalY;
-                info[pixel.x][pixel.y][2] = depth;
-                for (int c = 0; c < 3; c++)
-                    albedo[pixel.x][pixel.y][c] = rgb[c];
+                    albedo[pixel.x][pixel.y][c] = rgb[c]/numSamples;
             }
             LOG(INFO) << "Finished image tile " << tileBounds;
 
@@ -375,37 +363,29 @@ void SamplerIntegrator::Render(const Scene &scene) {
     }
     LOG(INFO) << "Rendering finished";
 
-    std::ofstream foutx("normals_map_x.txt");
+    std::ofstream fout("feature_map.txt");
+    fout << sampleExtent.x << " " << sampleExtent.y << "\n";
     for (int i = 0; i < sampleExtent.x; i++) {
         for (int j = 0; j < sampleExtent.y; j++)
-            foutx << info[i][j][0] << " ";
-        foutx << "\n";
+            fout << info[i][j][0] << " ";
+        fout << "\n";
     }
-    foutx.close();
-    std::ofstream fouty("normals_map_y.txt");
     for (int i = 0; i < sampleExtent.x; i++) {
         for (int j = 0; j < sampleExtent.y; j++)
-            fouty << info[i][j][1] << " ";
-        fouty << "\n";
+            fout << info[i][j][1] << " ";
+        fout << "\n";
     }
-    fouty.close();
-    std::ofstream foutdepth("depth_map.txt");
     for (int i = 0; i < sampleExtent.x; i++) {
         for (int j = 0; j < sampleExtent.y; j++)
-            foutdepth << info[i][j][2] << " ";
-        foutdepth << "\n";
+            fout << info[i][j][2] << " ";
+        fout << "\n";
     }
-    foutdepth.close();
-    std::ofstream foutalbedo("albedo.txt");
     for (int i = 0; i < sampleExtent.x; i++) {
         for (int j = 0; j < sampleExtent.y; j++)
-            foutalbedo << " " << albedo[i][j][0] << "," << albedo[i][j][1] << "," << albedo[i][j][2] << " ";
-        foutalbedo << "\n";
-
-
+            fout << " " << albedo[i][j][0] << "," << albedo[i][j][1] << "," << albedo[i][j][2] << " ";
+        fout << "\n";
     }
-    foutalbedo.close();
-
+    fout.close();
 
     // Save final image after rendering
     camera->film->WriteImage();
