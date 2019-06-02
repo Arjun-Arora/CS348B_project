@@ -3,7 +3,7 @@ import numpy as np
 import subprocess
 import sys
 
-NUM_IMAGES = 1
+NUM_IMAGES = 100
 pbrt_dir = sys.argv[1]
 pbrt_scene = sys.argv[2]
 exr_filename_idx = int(sys.argv[3]) - 1
@@ -28,7 +28,7 @@ def save_pbrt_and_run(i, new_pbrt_file, pixel_samples):
 
 	subprocess.run(["pbrtBuild/pbrt", path])
 	subprocess.run(["mv", "feature_map.txt", pbrt_dir + "feature_map" + extension + ".txt"])
-	subprocess.run(["mv", pbrt_scene +  + ".exr", pbrt_dir])
+	subprocess.run(["mv", pbrt_scene + extension + ".exr", pbrt_dir])
 
 pbrt_file = []
 with open(pbrt_dir + pbrt_scene + ".pbrt", "r") as f:
@@ -43,5 +43,5 @@ for i in range(NUM_IMAGES):
 		lookat[j] = "%.5f" % (float(lookat[j]) + np.random.uniform(-0.5, 0.5))
 	new_pbrt_file[lookat_idx] = " ".join(lookat) + "\n"
 
-	save_pbrt_and_run(i, new_pbrt_file, 64)
-	save_pbrt_and_run(i, new_pbrt_file, 4096)
+	save_pbrt_and_run(i, copy.deepcopy(new_pbrt_file), 64)
+	save_pbrt_and_run(i, copy.deepcopy(new_pbrt_file), 4096)
