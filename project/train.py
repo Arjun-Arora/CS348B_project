@@ -49,10 +49,10 @@ def create_args():
     #                 help='scale factor for training set')
     parser.add_argument('--print_every',dest='print_every',default=1,type=int,help='print every x epochs')
     parser.add_argument('--save_every',dest='save_every',default=1,type=int,help='save model every x epochs')
-    parser.add_argument('--model_save_path',dest='model_save_path',default='./',type=str,help='path for saved model')
+    parser.add_argument('--model_save_path',dest='model_save_path',default='.results/',type=str,help='path for saved model')
     parser.add_argument('--num_epochs',dest='num_epochs',default=10,type=int,help='number of epochs')
     parser.add_argument('--in_ch',dest='in_ch',default=9,type=int,help='number of channels')
-    parser.add_argument('--image_directory',dest='image_directory',default='./',type=str,help='path for saved grid images')
+    parser.add_argument('--image_directory',dest='image_directory',default='.results/',type=str,help='path for saved grid images')
     args = parser.parse_args()
     return args
 
@@ -72,8 +72,8 @@ def train(args,Dataset):
     in_ch = int(args.in_ch)
     val_split = args.val_split
     img_directory = args.image_directory
-  	#model = SimpleCNN(in_ch=in_ch)
-    model = MW_Unet(in_ch=in_ch)
+  	model = SimpleCNN(in_ch=in_ch)
+    #model = MW_Unet(in_ch=in_ch)
     model = model
     model.to(device)
     model.apply(init_weights)
