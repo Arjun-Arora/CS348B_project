@@ -65,7 +65,7 @@ def train(args,Dataset):
     #train_data_path = str(args['--data_path'])
     in_ch = int(args.in_ch)
     val_split = args.val_split
-    img_directory = args.img_directory
+    img_directory = args.image_directory
 
     model = MW_Unet(in_ch=in_ch)
     model = model.double()
@@ -108,7 +108,13 @@ def train(args,Dataset):
                             model.train()
 
                             target, model_input, features = sample['target'],sample['input'], sample['features']
-                            torch.cat((model_input, features), dim=0)
+                            N,P,C,H,W = model_input.shape
+                            N,P,C_feat,H,W = features.shape
+                            model_input =torch.reshape(model_input,(-1,C,H,W))
+                            features = torch.reshape(features,(-1,C_feat,H,W))
+                            target = torch.reshape(target,(-1,C,H,W))
+                            model_input = torch.cat((model_input, features), dim=1)
+                            print(model_input.shape)
                             target = target.to(device)
                             model_input = model_input.to(device)
 
@@ -118,8 +124,8 @@ def train(args,Dataset):
 
                             output = model.forward(model_input.double())
 
-                            train_loss = backprop(optimizer, output, target,criterion)
-                            train_PSNR = get_PSNR(output, target)
+                            train_loss = utils.backprop(optimizer, output, target,criterion)
+                            train_PSNR = utils.get_PSNR(output, target)
 
                             avg_val_PSNR = []
                             avg_val_loss = []
@@ -134,7 +140,7 @@ def train(args,Dataset):
                                             output = model.forward(model_input)
                                             loss_fn = criterion
                                             loss_val = loss_fn(output, target)
-                                            PSNR = get_PSNR(output, target)
+                                            PSNR = utils.get_PSNR(output, target)
                                             avg_val_PSNR.append(PSNR)
                                             avg_val_loss.append(loss_val.cpu().detach().numpy())
                             avg_val_PSNR = np.mean(avg_val_PSNR)
