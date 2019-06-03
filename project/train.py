@@ -107,7 +107,8 @@ def train(args,Dataset):
                         for index, sample in enumerate(dataloader_train):
                             model.train()
 
-                            target, model_input = sample['target'],sample['input']
+                            target, model_input, features = sample['target'],sample['input'], sample['features']
+                            torch.cat((model_input, features), dim=0)
                             target = target.to(device)
                             model_input = model_input.to(device)
 
