@@ -90,6 +90,7 @@ def train(args,Dataset):
     split = int(np.floor(val_split * dataset_size))
     np.random.shuffle(indices)
     train_indices, val_indices = indices[split:], indices[:split]
+    #train_indices, val_indices = indices[:1], indices[1:2]
     train_sampler = SubsetRandomSampler(train_indices)
     valid_sampler = SubsetRandomSampler(val_indices)
 
