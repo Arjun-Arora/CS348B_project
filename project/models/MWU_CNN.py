@@ -16,7 +16,7 @@ class MW_Unet(nn.Module):
     input:N,C,H,W
     output: N,C,H,W
     """
-    def __init__(self,num_conv=0,in_ch=1,channel_1=16,channel_2=32):
+    def __init__(self,num_conv=0,in_ch=1,out_ch=3,channel_1=16,channel_2=32):
         '''
         :param: num_conv per contraction and expansion layer, how many extra conv-batch-relu layers wanted
         :param in_ch: number of input channels expected
@@ -26,13 +26,14 @@ class MW_Unet(nn.Module):
         print("channel_1: {}, channel_2: {}".format(channel_1,channel_2))
         self.num_conv = num_conv
         self.in_ch = in_ch
+        self.out_ch = out_ch
         self.cnn_1 = WCNN(in_ch=in_ch,out_ch=channel_1,num_conv=num_conv) #output N,160,H/2,W/2
         self.cnn_2 = WCNN(in_ch=channel_1,out_ch=channel_2,num_conv=num_conv)
         self.cnn_3 = WCNN(in_ch=channel_2,out_ch=channel_2,num_conv=num_conv)
         self.icnn_3 = IWCNN(in_ch=channel_2,internal_ch=4*channel_2,num_conv=num_conv)
         self.icnn_2 = IWCNN(in_ch=2*channel_2,internal_ch=4*channel_1,num_conv=num_conv) #expecting 2*256 because of skip connection
         self.icnn_1 = IWCNN(in_ch=2*channel_1,internal_ch=self.in_ch*4,num_conv=num_conv) # output N,in_ch,H,W
-        self.final_conv = nn.Conv2d(in_channels=self.in_ch,out_channels=self.in_ch,kernel_size=3,padding=1)
+        self.final_conv = nn.Conv2d(in_channels=self.in_ch,out_channels=self.out_ch,kernel_size=3,padding=1)
 
     def forward(self,x):
         x1 = self.cnn_1(x)
@@ -57,4 +58,4 @@ if __name__ == "__main__":
 
     print("shape of X: ", X.shape)
     print("shape of Y: ", Y.shape)
-    print(torch.mean(X - Y))
+    #print(torch.mean(X - Y))
