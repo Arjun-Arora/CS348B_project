@@ -17,18 +17,44 @@ from tqdm import tqdm
 import glob, os 
 import fnmatch
 import cv2
+import argparse
+
+def create_args():
+	parser = argparse.ArgumentParser(description = "hyperparameters for training")
+	parser.add_argument('--epochs',dest = 'epochs',default = 5, type=int,
+					  help='number of epochs')
+	parser.add_argument('--batch',dest = 'batch_size',default = 16, type=int,
+					  help='size of batch')
+	parser.add_argument('--lr',dest = 'lr',default = 0.001, type=float,
+					  help='learning rate')
+	parser.add_argument('--gpu',dest = 'gpu',default = False, action="store_true",
+						help='whether to use gpu')
+	parser.add_argument('--load_model',dest = 'load',default = False,
+						help='path to prev model')
+	parser.add_argument('--val_split',dest = 'validation_split',default = 0.2,type=float,
+						 help = 'percentage of data in val')
+	parser.add_argument('--one_class',dest = 'one_class',default = False,action="store_true",
+						help='whether to make binary classification')
+	parser.add_argument('--non_background_weight',dest = 'non_background_weight',default = 40, type=float,
+					  help='non_background_weight')
+	parser.add_argument('--network_rd_factor',dest = 'network_rd_factor',default = 0, type=int,
+					  help='reduction factor of network rate')
+	parser.add_argument('--scale',dest = 'scale_factor',default = 0.1, type=float,
+					  help='scale factor for training set')
+	args = parser.parse_args()
+
 
 def train(args,Dataset): 
 	####################################### Initializing Model #######################################
 	step = 0.01
-	experiment_dir = args['--experiment_dir']
+	#experiment_dir = args['--experiment_dir']
 	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 	print_every = int(args['--print_every'])
 	num_epochs = int(args['--num_epochs'])
 	save_every = int(args['--save_every'])
 	save_path = str(args['--model_save_path'])
 	batch_size = int(args['--batch_size'])
-	train_data_path = str(args['--data_path'])
+	#train_data_path = str(args['--data_path'])
 	in_ch = int(args['--in_ch'])
 	val_split = args['--val_split']
 
