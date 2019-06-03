@@ -151,9 +151,9 @@ def train(args,Dataset):
                                     real_grid = torchvision.utils.make_grid(real_grid)
                                     input_grid = model_input.data
                                     input_grid = torchvision.utils.make_grid(input_grid)
-                                    save_image(input_grid, '{}train_input_img.png'.format(img_directory))
-                                    save_image(img_grid, '{}train_img_{}.png'.format(img_directory, epoch))
-                                    save_image(real_grid, '{}train_real_img_{}.png'.format(img_directory, epoch))
+                                    #save_image(input_grid, '{}train_input_img.png'.format(img_directory))
+                                    #save_image(img_grid, '{}train_img_{}.png'.format(img_directory, epoch))
+                                    #save_image(real_grid, '{}train_real_img_{}.png'.format(img_directory, epoch))
                                     print('train images')
                                     fig,ax  = plt.subplots(3)
                                     fig.subplots_adjust(hspace=0.5)
@@ -163,7 +163,8 @@ def train(args,Dataset):
                                     ax[1].imshow(input_grid.cpu().numpy().transpose((1, 2, 0)).astype(np.uint8))
                                     ax[2].set_title('output')
                                     ax[2].imshow(img_grid.cpu().numpy().transpose((1, 2, 0)).astype(np.uint8))
-                                    plt.show()
+                                    #plt.show()
+                                    plt.savefig('{}train_output_target_img_{}.png'.format(img_directory, epoch))
 
                             pbar.update(1)
                             if epoch % print_every == 0:
