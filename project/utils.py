@@ -18,6 +18,7 @@ import glob, os
 import fnmatch
 import cv2
 
+
 def loadFilenames(data_path):
 	image_list = []
 	feature_list = []
@@ -53,6 +54,10 @@ class MonteCarloDataset(Dataset):
 		feature_map = np.load(os.path.join(self.data_path,self.feature_list[idx]))
 		target_img = cv2.imread(os.path.join(self.data_path,self.target_list[idx]),cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
 		target_img = cv2.cvtColor(target_img,cv2.COLOR_BGR2RGB)
+
+		target_img = np.transpose(target_img,(2,0,1))
+		input_img = np.transpose(input_img,(2,0,1))
+		feature_map = np.transpose(feature_map,(2,0,1))
 		sample = {'input':input_img,'features': feature_map,'target':target_img}
 		return sample
 
@@ -265,14 +270,33 @@ def train(args,Dataset):
 if __name__ =="__main__":
 	dataset_dir = "./contemporary-bathroom_data/"
 	Dataset = MonteCarloDataset(dataset_dir)
-	sample = Dataset[1]
+	idx = np.random.randint(0,len(Dataset))
+	sample = Dataset[idx]
 
+	#output in C,H,W format
 	input_img,feature_map,target_img = sample['input'],sample['features'],sample['target']
-	plt.figure()
-	plt.imshow(input_img ** (1/2.2))
-	plt.figure()
-	plt.imshow(target_img ** (1/2.2))
+
+	depth_map = feature_map[2,:,:]
+	normals = np.vstack((feature_map[0:2,:,:],np.expand_dims(np.zeros_like(depth_map),axis=0)))
+	albedo = feature_map[3:,:,:]
+
+	#print(feature_map.dtype)
+	f,ax = plt.subplots(3,2)
+	f.subplots_adjust(hspace=1.0)
+	#f.set_size_inches(18.5,10.5)
+	ax[0,0].imshow(np.transpose(input_img ** (1/2.2),(1,2,0)))
+	ax[0,0].set_title("input")
+	ax[0,1].imshow(np.transpose(target_img ** (1/2.2),(1,2,0)))
+	ax[0,1].set_title("target")
+	ax[1,0].imshow(depth_map,cmap="gray")
+	ax[1,0].set_title('depth_map')
+	ax[1,1].imshow(np.transpose(normals,(1,2,0)))
+	ax[1,1].set_title("normal_map")
+	ax[2,0].imshow(np.transpose(albedo,(1,2,0)))
+	ax[2,0].set_title("albedo")
+	f.delaxes(ax[2,1])
 	plt.show()
+
 
 
 	# print(len(image_list))
