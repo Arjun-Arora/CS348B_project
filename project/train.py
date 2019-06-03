@@ -62,6 +62,7 @@ def train(args,Dataset):
     step = args.lr
     #experiment_dir = args['--experiment_dir']
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("device:{}".format(device))
     print_every = int(args.print_every)
     num_epochs = int(args.num_epochs)
     save_every = int(args.save_every)
@@ -78,7 +79,8 @@ def train(args,Dataset):
     model.apply(init_weights)
     optimizer = torch.optim.Adam(model.parameters(), lr=step)
 
-    criterion = nn.MSELoss()
+    #criterion = nn.MSELoss()
+    criterion = torch.nn.SmoothL1Loss()
 
         ######################################### Loading Data ##########################################
 
@@ -171,7 +173,7 @@ def train(args,Dataset):
                                     #save_image(input_grid, '{}train_input_img.png'.format(img_directory))
                                     #save_image(img_grid, '{}train_img_{}.png'.format(img_directory, epoch))
                                     #save_image(real_grid, '{}train_real_img_{}.png'.format(img_directory, epoch))
-                                    print('train images')
+                                    #print('train images')
                                     fig,ax  = plt.subplots(3)
                                     fig.subplots_adjust(hspace=0.5)
                                     ax[0].set_title('target')
@@ -184,9 +186,9 @@ def train(args,Dataset):
                                     plt.savefig('{}train_output_target_img_{}.png'.format(img_directory, epoch))
 
                             pbar.update(1)
-                            if epoch % print_every == 0:
-                                    print("Epoch: {}, Loss: {}, Training PSNR: {}".format(epoch, train_loss, train_PSNR))
-                                    print("Epoch: {}, Avg Val Loss: {},Avg Val PSNR: {}".format(epoch, avg_val_loss, avg_val_PSNR))
+                if epoch % print_every == 0:
+                        print("Epoch: {}, Loss: {}, Training PSNR: {}".format(epoch, train_loss, train_PSNR))
+                        print("Epoch: {}, Avg Val Loss: {},Avg Val PSNR: {}".format(epoch, avg_val_loss, avg_val_PSNR))
                 if best_val_PSNR < avg_val_PSNR:
                         best_val_PSNR = avg_val_PSNR
                         print("new best Avg Val PSNR: {}".format(best_val_PSNR))
@@ -195,7 +197,7 @@ def train(args,Dataset):
                                     'model_state_dict': model.state_dict(),
                                     'optimizer_state_dict': optimizer.state_dict(),
                                     'loss': train_loss},
-                                   save_path)
+                                   save_path + "checkpoint{}.pth".format(epoch))
                         print("Saved successfully to {}".format(save_path))
 
 
@@ -206,7 +208,7 @@ def train(args,Dataset):
                         'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
                         'loss': train_loss},
-                       save_path)
+                       save_path + "checkpoint{}.pth".format(epoch))
             print("Saved successfully to {}".format(save_path))
 
             print("Training completed.")
