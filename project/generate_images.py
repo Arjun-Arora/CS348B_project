@@ -11,7 +11,7 @@ lookat_idx = int(sys.argv[4]) - 1
 sample_idx = int(sys.argv[5]) - 1
 
 def save_pbrt_and_run(i, new_pbrt_file, pixel_samples):
-	extension = str(i) + "_" + str(pixel_samples)
+	extension = "_" + str(i) + "_" + str(pixel_samples)
 
 	idx = new_pbrt_file[exr_filename_idx].find(".exr")
 	new_pbrt_file[exr_filename_idx] = new_pbrt_file[exr_filename_idx][:idx] + extension + ".exr\"\n"
@@ -27,8 +27,11 @@ def save_pbrt_and_run(i, new_pbrt_file, pixel_samples):
 	f.close()
 
 	subprocess.run(["pbrtBuild/pbrt", path])
-	subprocess.run(["mv", "feature_map.txt", pbrt_dir + "feature_map" + extension + ".txt"])
 	subprocess.run(["mv", pbrt_scene + extension + ".exr", pbrt_dir])
+	if pixel_samples == 64:
+		subprocess.run(["mv", "feature_map.txt", pbrt_dir + "feature_map" + extension + ".txt"])
+	else:
+		subprocess.run(["rm", "feature_map.txt"])
 
 pbrt_file = []
 with open(pbrt_dir + pbrt_scene + ".pbrt", "r") as f:
