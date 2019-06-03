@@ -114,12 +114,11 @@ def train(args,Dataset):
                             features = torch.reshape(features,(-1,C_feat,H,W))
                             target = torch.reshape(target,(-1,C,H,W))
                             model_input = torch.cat((model_input, features), dim=1)
-                            #print(model_input.shape)
                             target = target.to(device)
                             model_input = model_input.to(device)
 
                             #print(model_input.dtype)
-                            print(model_input.shape)
+                            #print(model_input.shape)
                             # print(index)
 
                             output = model.forward(model_input)
@@ -133,16 +132,16 @@ def train(args,Dataset):
                             with torch.no_grad():
                                     for val_index, val_sample in enumerate(dataloader_val):
                                             target, model_input, features = val_sample['target'],val_sample['input'], val_sample['features']
-				                            N,P,C,H,W = model_input.shape
-				                            N,P,C_feat,H,W = features.shape
-				                            model_input =torch.reshape(model_input,(-1,C,H,W))
-				                            features = torch.reshape(features,(-1,C_feat,H,W))
-				                            target = torch.reshape(target,(-1,C,H,W))
-				                            model_input = torch.cat((model_input, features), dim=1)
-				                            #print(model_input.shape)
-				                            target = target.to(device)
-				                            model_input = model_input.to(device)
-                            				#print(model_input.shape)
+                                            N,P,C,H,W = model_input.shape
+                                            N,P,C_feat,H,W = features.shape
+                                            model_input =torch.reshape(model_input,(-1,C,H,W))
+                                            features = torch.reshape(features,(-1,C_feat,H,W))
+                                            target = torch.reshape(target,(-1,C,H,W))
+                                            model_input = torch.cat((model_input, features), dim=1)
+                                            #print(model_input.shape)
+                                            target = target.to(device)
+                                            model_input = model_input.to(device)
+                                            output = model.forward(model_input)
                                             loss_fn = criterion
                                             loss_val = loss_fn(output, target)
                                             PSNR = utils.get_PSNR(output, target)
@@ -161,7 +160,7 @@ def train(args,Dataset):
                                     img_grid = torchvision.utils.make_grid(img_grid)
                                     real_grid = target.data
                                     real_grid = torchvision.utils.make_grid(real_grid)
-                                    input_grid = model_input.data
+                                    input_grid = model_input.data[:,:3,:,:]
                                     input_grid = torchvision.utils.make_grid(input_grid)
                                     #save_image(input_grid, '{}train_input_img.png'.format(img_directory))
                                     #save_image(img_grid, '{}train_img_{}.png'.format(img_directory, epoch))
