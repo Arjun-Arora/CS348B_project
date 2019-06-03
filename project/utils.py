@@ -35,13 +35,16 @@ def loadFilenames(data_path):
 
 class MonteCarloDataset(Dataset):
 
-	def __init__(self,data_path):
+	def __init__(self,data_path,patchify=True,patch_sz=(64,64),max_patches = 32):
 		self.data_path = data_path
+		self.patchify = patchify
 		self.image_list,self.feature_list,self.target_list = loadFilenames(data_path)
 
 		assert len(self.image_list) == len(self.target_list) == len(self.feature_list)
 
 		self.length = len(self.image_list)
+		self.patch_sz = patch_sz
+		self.max_patches = max_patches
 	def __len__(self):
 		return self.length
 	def __getitem__(self,idx): 
@@ -55,9 +58,20 @@ class MonteCarloDataset(Dataset):
 		target_img = cv2.imread(os.path.join(self.data_path,self.target_list[idx]),cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
 		target_img = cv2.cvtColor(target_img,cv2.COLOR_BGR2RGB)
 
-		target_img = np.transpose(target_img,(2,0,1))
-		input_img = np.transpose(input_img,(2,0,1))
-		feature_map = np.transpose(feature_map,(2,0,1))
+		if self.patchify:
+			stacked_img = np.dstack((input_img,target_img,feature_map))
+			patched = image.extract_patches_2d(stacked_img,self.patch_sz,max_patches=self.max_patches)
+			#print(patched.shape)
+			input_img = patched[:,:,:,0:3]
+			target_img = patched[:,:,:,3:6]
+			feature_map = patched[:,:,:,6:]
+			target_img = np.transpose(target_img,(0,3,1,2))
+			input_img = np.transpose(input_img,(0,3,1,2))
+			feature_map = np.transpose(feature_map,(0,3,1,2))
+		else:
+			target_img = np.transpose(target_img,(2,0,1))
+			input_img = np.transpose(input_img,(2,0,1))
+			feature_map = np.transpose(feature_map,(2,0,1))
 		sample = {'input':input_img,'features': feature_map,'target':target_img}
 		return sample
 
@@ -268,13 +282,21 @@ def train(args,Dataset):
 
 
 if __name__ =="__main__":
+	patchify = False
 	dataset_dir = "./contemporary-bathroom_data/"
-	Dataset = MonteCarloDataset(dataset_dir)
+	Dataset = MonteCarloDataset(dataset_dir,patchify=patchify)
 	idx = np.random.randint(0,len(Dataset))
 	sample = Dataset[idx]
-
 	#output in C,H,W format
-	input_img,feature_map,target_img = sample['input'],sample['features'],sample['target']
+	if patchify:
+		input_patches,feature_map_patches,target_patches = sample['input'],sample['features'],sample['target']
+		N,C,H,W = input_patches.shape
+		patch_idx = np.random.randint(0,N)
+		input_img = input_patches[patch_idx,:,:,:]
+		feature_map = feature_map_patches[patch_idx,:,:,:]
+		target_img = target_patches[patch_idx,:,:,:]
+	else:
+		input_img,feature_map,target_img = sample['input'],sample['features'],sample['target']
 
 	depth_map = feature_map[2,:,:]
 	normals = np.vstack((feature_map[0:2,:,:],np.expand_dims(np.zeros_like(depth_map),axis=0)))
