@@ -13,12 +13,17 @@ import torch.nn as nn
 from skimage.measure import compare_ssim as ssim
 sys.path.append("./models/")
 from MWU_CNN import MW_Unet 
+from MWU_CNN import SimpleCNN
 from tqdm import tqdm 
 import glob, os 
 import fnmatch
 import cv2
 import argparse
 import utils
+def init_weights(m):
+    if type(m) == nn.Conv2d:
+        nn.init.xavier_uniform_(m.weight)
+        m.bias.data.fill_(0.01)
 
 def create_args():
     parser = argparse.ArgumentParser(description = "hyperparameters for training")
@@ -26,7 +31,7 @@ def create_args():
     #                 help='number of epochs')
     parser.add_argument('--batch_size',dest = 'batch_size',default = 16, type=int,
                       help='size of batch')
-    parser.add_argument('--lr',dest = 'lr',default = 0.001, type=float,
+    parser.add_argument('--lr',dest = 'lr',default = 0.01, type=float,
                       help='learning rate')
     parser.add_argument('--gpu',dest = 'gpu',default = False, action="store_true",
                         help='whether to use gpu')
@@ -66,10 +71,11 @@ def train(args,Dataset):
     in_ch = int(args.in_ch)
     val_split = args.val_split
     img_directory = args.image_directory
-
+  	#model = SimpleCNN(in_ch=in_ch)
     model = MW_Unet(in_ch=in_ch)
     model = model
     model.to(device)
+    model.apply(init_weights)
     optimizer = torch.optim.Adam(model.parameters(), lr=step)
 
     criterion = nn.MSELoss()
@@ -155,12 +161,12 @@ def train(args,Dataset):
                             train_losses.append(train_loss.cpu().detach().numpy())
                             train_PSNRs.append(train_PSNR)
 
-                            if index == len(dataloader_train) - 1:
-                                    img_grid = output.data
+                            if index == len(dataloader_train)  - 1:
+                                    img_grid = output.data[:9]
                                     img_grid = torchvision.utils.make_grid(img_grid)
-                                    real_grid = target.data
+                                    real_grid = target.data[:9]
                                     real_grid = torchvision.utils.make_grid(real_grid)
-                                    input_grid = model_input.data[:,:3,:,:]
+                                    input_grid = model_input.data[:9,:3,:,:]
                                     input_grid = torchvision.utils.make_grid(input_grid)
                                     #save_image(input_grid, '{}train_input_img.png'.format(img_directory))
                                     #save_image(img_grid, '{}train_img_{}.png'.format(img_directory, epoch))
@@ -169,11 +175,11 @@ def train(args,Dataset):
                                     fig,ax  = plt.subplots(3)
                                     fig.subplots_adjust(hspace=0.5)
                                     ax[0].set_title('target')
-                                    ax[0].imshow(real_grid.cpu().numpy().transpose((1, 2, 0)).astype(np.uint8))
+                                    ax[0].imshow(real_grid.cpu().numpy().transpose((1, 2, 0)))
                                     ax[1].set_title('input')
-                                    ax[1].imshow(input_grid.cpu().numpy().transpose((1, 2, 0)).astype(np.uint8))
+                                    ax[1].imshow(input_grid.cpu().numpy().transpose((1, 2, 0)))
                                     ax[2].set_title('output')
-                                    ax[2].imshow(img_grid.cpu().numpy().transpose((1, 2, 0)).astype(np.uint8))
+                                    ax[2].imshow(img_grid.cpu().numpy().transpose((1, 2, 0)))
                                     #plt.show()
                                     plt.savefig('{}train_output_target_img_{}.png'.format(img_directory, epoch))
 

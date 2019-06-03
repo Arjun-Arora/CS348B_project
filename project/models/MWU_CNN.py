@@ -3,11 +3,47 @@ import os
 import sys
 import torch.nn as nn
 from MWCNN import WCNN,IWCNN
+import torch.nn.functional as F
+
 
 def init_weights(m):
     if type(m) == nn.Conv2d:
         nn.init.xavier_uniform_(m.weight)
         m.bias.data.fill_(0.01)
+
+class SimpleCNN(torch.nn.Module):
+    
+    #Our batch shape for input x is (3, 32, 32)
+    
+    def __init__(self,in_ch=1,out_ch=3):
+        super(SimpleCNN, self).__init__()
+        
+        #Input channels = 3, output channels = 18
+        self.conv1 = torch.nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=1, padding=1)
+        self.conv2 =torch.nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1)
+        self.conv3 =torch.nn.Conv2d(out_ch, out_ch, kernel_size=3, stride=1, padding=1)
+        #self.pool = torch.nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
+        #4608 input features, 64 output features (see sizing flow below)        
+        #64 input features, 10 output features for our 10 defined classes
+        
+    def forward(self, x):
+        
+        #Computes the activation of the first convolution
+        #Size changes from (3, 32, 32) to (18, 32, 32)
+        x = F.relu(self.conv1(x))
+        
+        #Size changes from (18, 32, 32) to (18, 16, 16)        
+        #Reshape data to input to the input layer of the neural net
+        #Size changes from (18, 16, 16) to (1, 4608)
+        #Recall that the -1 infers this dimension from the other given dimension        
+        #Computes the activation of the first fully connected layer
+        #Size changes from (1, 4608) to (1, 64)
+        x = F.relu(self.conv2(x))
+        
+        #Computes the second fully connected layer (activation applied later)
+        #Size changes from (1, 64) to (1, 10)
+        x = self.conv3(x)
+        return(x)
 
 class MW_Unet(nn.Module):
     """
@@ -16,7 +52,7 @@ class MW_Unet(nn.Module):
     input:N,C,H,W
     output: N,C,H,W
     """
-    def __init__(self,num_conv=0,in_ch=1,out_ch=3,channel_1=16,channel_2=32):
+    def __init__(self,num_conv=0,in_ch=1,out_ch=3,channel_1=32,channel_2=64):
         '''
         :param: num_conv per contraction and expansion layer, how many extra conv-batch-relu layers wanted
         :param in_ch: number of input channels expected
