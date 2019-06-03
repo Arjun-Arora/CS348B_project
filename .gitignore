@@ -5,3 +5,8 @@ src/objs
 .sconsign.dblite
 project/pbrtBuild
 .DS_Store
+*.npy
+*.exr
+*.png
+*.gz
+*.zip

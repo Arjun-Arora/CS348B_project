@@ -1,0 +1,4 @@
+Are we using BSDF::rho() correctly?  
+How does time factor into AnimatedTransform? 
+What is ray.time vs ray.t? 
+How do we get multiple outputs with animatedTransform

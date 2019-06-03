@@ -13,3 +13,6 @@
 [submodule "pytorch_wavelets"]
 	path = pytorch_wavelets
 	url = https://github.com/fbcotter/pytorch_wavelets
+[submodule "project/pyexr"]
+	path = project/pyexr
+	url = https://github.com/wiedemannc/pyexr.git
