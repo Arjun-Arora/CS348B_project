@@ -68,7 +68,7 @@ def train(args,Dataset):
     img_directory = args.image_directory
 
     model = MW_Unet(in_ch=in_ch)
-    model = model.double()
+    model = model
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=step)
 
@@ -122,7 +122,7 @@ def train(args,Dataset):
                             print(model_input.shape)
                             # print(index)
 
-                            output = model.forward(model_input.double())
+                            output = model.forward(model_input)
 
                             train_loss = utils.backprop(optimizer, output, target,criterion)
                             train_PSNR = utils.get_PSNR(output, target)
