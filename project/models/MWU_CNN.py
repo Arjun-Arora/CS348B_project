@@ -52,14 +52,14 @@ class MW_Unet(nn.Module):
     input:N,C,H,W
     output: N,C,H,W
     """
-    def __init__(self,num_conv=12,in_ch=1,out_ch=3,channel_1=32,channel_2=64):
+    def __init__(self,num_conv=24,in_ch=1,out_ch=3,channel_1=128,channel_2=256):
         '''
         :param: num_conv per contraction and expansion layer, how many extra conv-batch-relu layers wanted
         :param in_ch: number of input channels expected
         :return:
         '''
         super(MW_Unet,self).__init__()
-        print("channel_1: {}, channel_2: {}".format(channel_1,channel_2))
+        print("channel_1: {}, channel_2: {} num_conv: {}".format(channel_1,channel_2,num_conv))
         self.num_conv = num_conv
         self.in_ch = in_ch
         self.out_ch = out_ch
