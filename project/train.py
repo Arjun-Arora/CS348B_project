@@ -114,11 +114,11 @@ def train(args,Dataset):
                             features = torch.reshape(features,(-1,C_feat,H,W))
                             target = torch.reshape(target,(-1,C,H,W))
                             model_input = torch.cat((model_input, features), dim=1)
-                            print(model_input.shape)
+                            #print(model_input.shape)
                             target = target.to(device)
                             model_input = model_input.to(device)
 
-                            print(model_input.dtype)
+                            #print(model_input.dtype)
                             print(model_input.shape)
                             # print(index)
 
@@ -132,12 +132,17 @@ def train(args,Dataset):
                             model.eval()
                             with torch.no_grad():
                                     for val_index, val_sample in enumerate(dataloader_val):
-                                            target, model_input = val_sample['target'], val_sample['input']
-
-                                            target = target.to(device)
-                                            model_input = model_input.to(device)
-
-                                            output = model.forward(model_input)
+                                            target, model_input, features = val_sample['target'],val_sample['input'], val_sample['features']
+				                            N,P,C,H,W = model_input.shape
+				                            N,P,C_feat,H,W = features.shape
+				                            model_input =torch.reshape(model_input,(-1,C,H,W))
+				                            features = torch.reshape(features,(-1,C_feat,H,W))
+				                            target = torch.reshape(target,(-1,C,H,W))
+				                            model_input = torch.cat((model_input, features), dim=1)
+				                            #print(model_input.shape)
+				                            target = target.to(device)
+				                            model_input = model_input.to(device)
+                            				#print(model_input.shape)
                                             loss_fn = criterion
                                             loss_val = loss_fn(output, target)
                                             PSNR = utils.get_PSNR(output, target)
