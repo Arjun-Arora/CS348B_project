@@ -67,15 +67,21 @@ class MonteCarloDataset(Dataset):
 			feature_map = patched[:,:,:,6:]
 			depth_map = feature_map[:,:,2]
 			depth_map = depth_map/np.max(depth_map)
+			albedo = np.expand_dims(np.transpose(feature_map[:,:,3:], (2, 0, 1)), 1)
 			target_img = np.transpose(target_img,(0,3,1,2))
 			input_img = np.transpose(input_img,(0,3,1,2))
 			feature_map = np.transpose(feature_map,(0,3,1,2))
 		else:
 			depth_map = feature_map[:,:,2]
 			depth_map = depth_map/np.max(depth_map)
+			albedo = np.transpose(feature_map[:,:,3:], (2, 0, 1))
 			target_img = np.transpose(target_img,(2,0,1))
 			input_img = np.transpose(input_img,(2,0,1))
 			feature_map = np.transpose(feature_map,(2,0,1))
+
+		eps = 1e-6
+		input_img = (input_img/(albedo + eps))**(1/2.2)
+		target_img = target_img**(1/2.2)
 
 		sample = {'input':input_img,'features': feature_map,'target':target_img}
 		return sample
