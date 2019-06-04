@@ -75,7 +75,7 @@ def train(args,Dataset):
     img_directory = args.image_directory
     model = MW_Unet(in_ch=in_ch)
     #model = UNet(in_ch=in_ch)
-    model = model
+    #model = model
     model.to(device)
     model.apply(init_weights)
     optimizer = torch.optim.Adam(model.parameters(), lr=step)
@@ -147,29 +147,30 @@ def train(args,Dataset):
                             avg_val_PSNR = []
                             avg_val_loss = []
                             model.eval()
+                            #output_val = 0;
                             with torch.no_grad():
                                     for val_index, val_sample in enumerate(dataloader_val):
-                                            target, model_input, features = val_sample['target'],val_sample['input'], val_sample['features']
-                                            N,P,C,H,W = model_input.shape
-                                            N,P,C_feat,H,W = features.shape
-                                            model_input =torch.reshape(model_input,(-1,C,H,W))
-                                            features = torch.reshape(features,(-1,C_feat,H,W))
-                                            albedo = features[:,3:,:,:]
+                                            target_val, model_input_val, features_val = val_sample['target'],val_sample['input'], val_sample['features']
+                                            N,P,C,H,W = model_input_val.shape
+                                            N,P,C_feat,H,W = features_val.shape
+                                            model_input_val =torch.reshape(model_input_val,(-1,C,H,W))
+                                            features_val = torch.reshape(features_val,(-1,C_feat,H,W))
+                                            albedo = features_val[:,3:,:,:]
                                             albedo = albedo.to(device)
                                             eps = torch.tensor(1e-6)
                                             eps = eps.to(device)
-                                            model_input = model_input.to(device)
-                                            model_input /= (albedo + eps)
-                                            target = torch.reshape(target,(-1,C,H,W))
-                                            features = features.to(device)
-                                            model_input = torch.cat((model_input, features), dim=1)
-                                            target = target.to(device)
-                                            model_input = model_input.to(device)
-                                            output = model.forward(model_input)
-                                            output *= (albedo + eps)
+                                            model_input_val = model_input_val.to(device)
+                                            model_input_val /= (albedo + eps)
+                                            target_val = torch.reshape(target_val,(-1,C,H,W))
+                                            features_val = features_val.to(device)
+                                            model_input_val = torch.cat((model_input_val, features_val), dim=1)
+                                            target_val = target_val.to(device)
+                                            model_input_val = model_input_val.to(device)
+                                            output_val = model.forward(model_input_val)
+                                            output_val *= (albedo + eps)
                                             loss_fn = criterion
-                                            loss_val = loss_fn(output, target)
-                                            PSNR = utils.get_PSNR(output, target)
+                                            loss_val = loss_fn(output_val, target_val)
+                                            PSNR = utils.get_PSNR(output_val, target_val)
                                             avg_val_PSNR.append(PSNR)
                                             avg_val_loss.append(loss_val.cpu().detach().numpy())
                             avg_val_PSNR = np.mean(avg_val_PSNR)
@@ -187,21 +188,25 @@ def train(args,Dataset):
                                     real_grid = torchvision.utils.make_grid(real_grid)
                                     input_grid = model_input.data[:9,:3,:,:]
                                     input_grid = torchvision.utils.make_grid(input_grid)
+                                    val_grid = output_val.data[:9]
+                                    val_grid = torchvision.utils.make_grid(val_grid)
                                     #save_image(input_grid, '{}train_input_img.png'.format(img_directory))
                                     #save_image(img_grid, '{}train_img_{}.png'.format(img_directory, epoch))
                                     #save_image(real_grid, '{}train_real_img_{}.png'.format(img_directory, epoch))
                                     #print('train images')
-                                    fig,ax  = plt.subplots(3)
+                                    fig,ax  = plt.subplots(4)
                                     fig.subplots_adjust(hspace=0.5)
                                     ax[0].set_title('target')
                                     ax[0].imshow(real_grid.cpu().numpy().transpose((1, 2, 0)))
                                     ax[1].set_title('input')
                                     ax[1].imshow(input_grid.cpu().numpy().transpose((1, 2, 0)))
-                                    ax[2].set_title('output')
+                                    ax[2].set_title('output_train')
                                     ax[2].imshow(img_grid.cpu().numpy().transpose((1, 2, 0)))
+                                    ax[3].set_title('output_val')
+                                    ax[3].imshow(val_grid.cpu().numpy().transpose((1, 2, 0)))
                                     #plt.show()
                                     plt.savefig('{}train_output_target_img_{}.png'.format(img_directory, epoch))
-                                    plt.close()
+                                    #plt.close()
 
                             pbar.update(1)
                 if epoch % print_every == 0:
