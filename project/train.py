@@ -119,9 +119,16 @@ def train(args,Dataset):
                             target, model_input, features = sample['target'],sample['input'], sample['features']
                             N,P,C,H,W = model_input.shape
                             N,P,C_feat,H,W = features.shape
-                            model_input =torch.reshape(model_input,(-1,C,H,W))
+                            model_input = torch.reshape(model_input,(-1,C,H,W))
                             features = torch.reshape(features,(-1,C_feat,H,W))
+                            albedo = features[:,3:,:,:]
+                            albedo = albedo.to(device)
+                            eps = torch.tensor(1e-6)
+                            eps = eps.to(device)
+                            model_input = model_input.to(device)
+                            model_input /= (albedo + eps)
                             target = torch.reshape(target,(-1,C,H,W))
+                            features = features.to(device)
                             model_input = torch.cat((model_input, features), dim=1)
                             target = target.to(device)
                             model_input = model_input.to(device)
@@ -131,6 +138,7 @@ def train(args,Dataset):
                             # print(index)
 
                             output = model.forward(model_input)
+                            output *= (albedo + eps)
 
                             train_loss = utils.backprop(optimizer, output, target,criterion)
                             train_PSNR = utils.get_PSNR(output, target)
@@ -145,12 +153,19 @@ def train(args,Dataset):
                                             N,P,C_feat,H,W = features.shape
                                             model_input =torch.reshape(model_input,(-1,C,H,W))
                                             features = torch.reshape(features,(-1,C_feat,H,W))
+                                            albedo = features[:,3:,:,:]
+                                            albedo = albedo.to(device)
+                                            eps = torch.tensor(1e-6)
+                                            eps = eps.to(device)
+                                            model_input = model_input.to(device)
+                                            model_input /= (albedo + eps)
                                             target = torch.reshape(target,(-1,C,H,W))
+                                            features = features.to(device)
                                             model_input = torch.cat((model_input, features), dim=1)
-                                            #print(model_input.shape)
                                             target = target.to(device)
                                             model_input = model_input.to(device)
                                             output = model.forward(model_input)
+                                            output *= (albedo + eps)
                                             loss_fn = criterion
                                             loss_val = loss_fn(output, target)
                                             PSNR = utils.get_PSNR(output, target)
@@ -185,6 +200,7 @@ def train(args,Dataset):
                                     ax[2].imshow(img_grid.cpu().numpy().transpose((1, 2, 0)))
                                     #plt.show()
                                     plt.savefig('{}train_output_target_img_{}.png'.format(img_directory, epoch))
+                                    plt.close()
 
                             pbar.update(1)
                 if epoch % print_every == 0:
