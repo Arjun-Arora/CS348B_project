@@ -206,12 +206,40 @@ def train(args,Dataset):
                                     ax[3].imshow(val_grid.cpu().numpy().transpose((1, 2, 0)))
                                     #plt.show()
                                     plt.savefig('{}train_output_target_img_{}.png'.format(img_directory, epoch))
-                                    #plt.close()
+                                    plt.close()
 
                             pbar.update(1)
                 if epoch % print_every == 0:
                         print("Epoch: {}, Loss: {}, Training PSNR: {}".format(epoch, train_loss, train_PSNR))
                         print("Epoch: {}, Avg Val Loss: {},Avg Val PSNR: {}".format(epoch, avg_val_loss, avg_val_PSNR))
+                        plt.figure()
+                        plt.plot(np.linspace(0,epoch,len(train_losses)),train_losses)
+                        plt.xlabel("Epoch")
+                        plt.ylabel("Loss")
+                        plt.savefig("{}train_loss{}.png".format(img_directory,epoch))
+                        plt.close()
+
+                        plt.figure()
+                        plt.plot(np.linspace(0,epoch,len(val_losses)),val_losses)
+                        plt.xlabel("Epoch")
+                        plt.ylabel("Loss")
+                        plt.savefig("{}val_loss{}.png".format(img_directory,epoch))
+                        plt.close()
+
+                        plt.figure()
+                        plt.plot(np.linspace(0,epoch,len(train_PSNRs)),train_PSNRs)
+                        plt.xlabel("Epoch")
+                        plt.ylabel("PSNR")
+                        plt.savefig("{}train_PSNR{}.png".format(img_directory,epoch))
+                        plt.close()
+
+                        plt.figure()
+                        plt.plot(np.linspace(0,epoch,len(val_PSNRs)),val_PSNRs)
+                        plt.xlabel("Epoch")
+                        plt.ylabel("PSNR")
+                        plt.savefig("{}val_PSNR{}.png".format(img_directory,epoch))
+                        plt.close()
+
                 if best_val_PSNR < avg_val_PSNR:
                         best_val_PSNR = avg_val_PSNR
                         print("new best Avg Val PSNR: {}".format(best_val_PSNR))
@@ -220,7 +248,7 @@ def train(args,Dataset):
                                     'model_state_dict': model.state_dict(),
                                     'optimizer_state_dict': optimizer.state_dict(),
                                     'loss': train_loss},
-                                   save_path + "checkpoint{}.pth".format(epoch))
+                                   save_path + "best_model.pth")
                         print("Saved successfully to {}".format(save_path))
 
 
