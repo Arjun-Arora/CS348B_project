@@ -11,3 +11,6 @@ project/pbrtBuild
 *.gz
 *.zip
 project/results
+project/.ipynb_checkpoints
+project/__pycache__
+newenv
