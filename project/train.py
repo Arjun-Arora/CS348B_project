@@ -104,7 +104,7 @@ def train(args,Dataset):
     print("length of val set: ", len(val_indices))
 
     #best_val_PSNR = 0.0
-    best_val_MSE = 0.0 
+    best_val_MSE = 100.0 
 
     train_PSNRs = []
     train_losses = []
