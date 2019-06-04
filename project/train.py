@@ -103,11 +103,18 @@ def train(args,Dataset):
     print("length of train set: ", len(train_indices))
     print("length of val set: ", len(val_indices))
 
-    best_val_PSNR = 0.0
+    #best_val_PSNR = 0.0
+    best_val_MSE = 0.0 
+
     train_PSNRs = []
     train_losses = []
+    train_SSIMs = []
+    train_MSEs = []
+
     val_PSNRs = []
     val_losses = []
+    val_SSIMs = []
+    val_MSEs = []
 
     try:
         for epoch in range(1, num_epochs + 1):
@@ -143,9 +150,13 @@ def train(args,Dataset):
 
                             train_loss = utils.backprop(optimizer, output, target,criterion)
                             train_PSNR = utils.get_PSNR(output, target)
+                            train_MSE = utils.get_MSE(output,target)
+                            train_SSIM = utils.get_SSIM(output,target)
 
                             avg_val_PSNR = []
                             avg_val_loss = []
+                            avg_val_MSE = []
+                            avg_val_SSIM =[]
                             model.eval()
                             #output_val = 0;
                             with torch.no_grad():
@@ -171,15 +182,26 @@ def train(args,Dataset):
                                             loss_fn = criterion
                                             loss_val = loss_fn(output_val, target_val)
                                             PSNR = utils.get_PSNR(output_val, target_val)
+                                            MSE = utils.get_MSE(output_val,target_val)
+                                            SSIM = utils.get_SSIM(output_val,target_val)
                                             avg_val_PSNR.append(PSNR)
                                             avg_val_loss.append(loss_val.cpu().detach().numpy())
+                                            avg_val_MSE.append(MSE)
+                                            avg_val_SSIM.append(SSIM)
                             avg_val_PSNR = np.mean(avg_val_PSNR)
                             avg_val_loss = np.mean(avg_val_loss)
+                            avg_val_MSE = np.mean(avg_val_MSE)
+                            avg_val_SSIM = np.mean(avg_val_SSIM)
+
                             val_PSNRs.append(avg_val_PSNR)
                             val_losses.append(avg_val_loss)
+                            val_MSEs.append(avg_val_MSE)
+                            val_SSIMs.append(avg_val_SSIM)
 
                             train_losses.append(train_loss.cpu().detach().numpy())
                             train_PSNRs.append(train_PSNR)
+                            train_MSEs.append(train_MSE)
+                            train_SSIMs.append(train_SSIM)
 
                             if index == len(dataloader_train)  - 1:
                                     img_grid = output.data[:9]
@@ -210,39 +232,69 @@ def train(args,Dataset):
 
                             pbar.update(1)
                 if epoch % print_every == 0:
-                        print("Epoch: {}, Loss: {}, Training PSNR: {}".format(epoch, train_loss, train_PSNR))
-                        print("Epoch: {}, Avg Val Loss: {},Avg Val PSNR: {}".format(epoch, avg_val_loss, avg_val_PSNR))
+                        print("Epoch: {}, Loss: {}, Train MSE: {} Train PSNR: {}, Train SSIM: {}".format(epoch, train_loss,train_MSE, train_PSNR,train_SSIM))
+                        print("Epoch: {}, Avg Val Loss: {}, Avg Val MSE: {}, Avg Val PSNR: {}, Avg Val SSIM: {}".format(epoch, avg_val_loss,avg_val_MSE, avg_val_PSNR,avg_val_SSIM))
                         plt.figure()
                         plt.plot(np.linspace(0,epoch,len(train_losses)),train_losses)
                         plt.xlabel("Epoch")
                         plt.ylabel("Loss")
-                        plt.savefig("{}train_loss{}.png".format(img_directory,epoch))
+                        plt.savefig("{}train_loss.png".format(img_directory))
                         plt.close()
 
                         plt.figure()
                         plt.plot(np.linspace(0,epoch,len(val_losses)),val_losses)
                         plt.xlabel("Epoch")
                         plt.ylabel("Loss")
-                        plt.savefig("{}val_loss{}.png".format(img_directory,epoch))
+                        plt.savefig("{}val_loss.png".format(img_directory))
                         plt.close()
 
                         plt.figure()
                         plt.plot(np.linspace(0,epoch,len(train_PSNRs)),train_PSNRs)
                         plt.xlabel("Epoch")
                         plt.ylabel("PSNR")
-                        plt.savefig("{}train_PSNR{}.png".format(img_directory,epoch))
+                        plt.savefig("{}train_PSNR.png".format(img_directory))
                         plt.close()
 
                         plt.figure()
                         plt.plot(np.linspace(0,epoch,len(val_PSNRs)),val_PSNRs)
                         plt.xlabel("Epoch")
                         plt.ylabel("PSNR")
-                        plt.savefig("{}val_PSNR{}.png".format(img_directory,epoch))
+                        plt.savefig("{}val_PSNR.png".format(img_directory))
                         plt.close()
 
-                if best_val_PSNR < avg_val_PSNR:
-                        best_val_PSNR = avg_val_PSNR
-                        print("new best Avg Val PSNR: {}".format(best_val_PSNR))
+                        plt.figure()
+                        plt.plot(np.linspace(0,epoch,len(train_MSEs)),train_MSEs)
+                        plt.xlabel("Epoch")
+                        plt.ylabel("MSE")
+                        plt.savefig("{}train_MSE.png".format(img_directory))
+                        plt.close()
+
+                        plt.figure()
+                        plt.plot(np.linspace(0,epoch,len(val_MSEs)),val_MSEs)
+                        plt.xlabel("Epoch")
+                        plt.ylabel("MSE")
+                        plt.savefig("{}val_MSE.png".format(img_directory))
+                        plt.close()
+
+
+                        plt.figure()
+                        plt.plot(np.linspace(0,epoch,len(train_SSIMs)),train_SSIMs)
+                        plt.xlabel("Epoch")
+                        plt.ylabel("SSIM")
+                        plt.savefig("{}train_SSIM.png".format(img_directory))
+                        plt.close()
+
+                        plt.figure()
+                        plt.plot(np.linspace(0,epoch,len(val_SSIMs)),val_SSIMs)
+                        plt.xlabel("Epoch")
+                        plt.ylabel("SSIM")
+                        plt.savefig("{}val_SSIM.png".format(img_directory))
+                        plt.close()
+                        
+
+                if best_val_MSE < avg_val_MSE:
+                        best_val_MSE = avg_val_MSE
+                        print("new best Avg Val MSE: {}".format(best_val_MSE))
                         print("Saving model to {}".format(save_path))
                         torch.save({'epoch': epoch,
                                     'model_state_dict': model.state_dict(),
@@ -264,7 +316,7 @@ def train(args,Dataset):
 
             print("Training completed.")
 
-    return (train_losses, train_PSNRs, val_losses, val_PSNRs, best_val_PSNR)
+    return (train_losses, train_PSNRs, val_losses, val_PSNRs, best_val_MSE)
 
 if __name__ == "__main__":
     patchify = True

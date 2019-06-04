@@ -118,6 +118,11 @@ def get_PSNR(model_output, target):
         mse = (np.square(I - I_hat)).mean(axis=None)
         PSNR = 10 * np.log10(1.0 / mse)
         return PSNR
+def get_MSE(model_output,target):
+    I_hat = model_output.cpu().detach().numpy()
+    I = target.cpu().detach().numpy()
+    mse = (np.square(I - I_hat)).mean(axis=None)
+    return mse 
 
 
 def get_SSIM(model_output, target):
