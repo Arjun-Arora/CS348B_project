@@ -292,7 +292,7 @@ def train(args,Dataset):
                         plt.close()
                         
 
-                if best_val_MSE < avg_val_MSE:
+                if best_val_MSE > avg_val_MSE:
                         best_val_MSE = avg_val_MSE
                         print("new best Avg Val MSE: {}".format(best_val_MSE))
                         print("Saving model to {}".format(save_path))
