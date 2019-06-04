@@ -10,3 +10,4 @@ project/pbrtBuild
 *.png
 *.gz
 *.zip
+project/results
