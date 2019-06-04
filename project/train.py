@@ -14,6 +14,7 @@ from skimage.measure import compare_ssim as ssim
 sys.path.append("./models/")
 from MWU_CNN import MW_Unet 
 from MWU_CNN import SimpleCNN
+from UNet import UNet
 from tqdm import tqdm 
 import glob, os 
 import fnmatch
@@ -72,8 +73,8 @@ def train(args,Dataset):
     in_ch = int(args.in_ch)
     val_split = args.val_split
     img_directory = args.image_directory
-    model = SimpleCNN(in_ch=in_ch)
-    #model = MW_Unet(in_ch=in_ch)
+    model = MW_Unet(in_ch=in_ch)
+    #model = UNet(in_ch=in_ch)
     model = model
     model.to(device)
     model.apply(init_weights)
