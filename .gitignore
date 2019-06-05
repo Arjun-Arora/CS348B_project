@@ -17,4 +17,4 @@ newenv
 *.pyc
 *.pyc
 *.pyc
-project/models/__pycache__
+project/models/__pycache__/
