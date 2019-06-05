@@ -324,6 +324,6 @@ if __name__ == "__main__":
     dataset_dir1 = "./villa_data/"
     Dataset0 = utils.MonteCarloDataset(dataset_dir0,patchify=patchify)
     Dataset1 = utils.MonteCarloDataset(dataset_dir1,patchify=patchify)
-    torch.utils.data.ConcatDataset([Dataset0,Dataset1])
+    Dataset = torch.utils.data.ConcatDataset([Dataset0,Dataset1])
     args = create_args()
     train(args, Dataset)
