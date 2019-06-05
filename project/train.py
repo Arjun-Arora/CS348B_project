@@ -80,8 +80,10 @@ def train(args,Dataset):
     model.apply(init_weights)
     optimizer = torch.optim.Adam(model.parameters(), lr=step)
 
+
     #criterion = nn.MSELoss()
     criterion = torch.nn.SmoothL1Loss()
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
 
         ######################################### Loading Data ##########################################
 
@@ -157,7 +159,14 @@ def train(args,Dataset):
                             avg_val_SSIM =[]
                             model.eval()
                             #output_val = 0;
-                            with torch.no_grad():
+
+                            train_losses.append(train_loss.cpu().detach().numpy())
+                            train_PSNRs.append(train_PSNR)
+                            train_MSEs.append(train_MSE)
+                            train_SSIMs.append(train_SSIM)
+
+                            if index == len(dataloader_train)  - 1:
+                                with torch.no_grad():
                                     for val_index, val_sample in enumerate(dataloader_val):
                                             target_val, model_input_val, features_val = val_sample['target'],val_sample['input'], val_sample['features']
                                             N,P,C,H,W = model_input_val.shape
@@ -186,47 +195,43 @@ def train(args,Dataset):
                                             avg_val_loss.append(loss_val.cpu().detach().numpy())
                                             avg_val_MSE.append(MSE)
                                             avg_val_SSIM.append(SSIM)
-                            avg_val_PSNR = np.mean(avg_val_PSNR)
-                            avg_val_loss = np.mean(avg_val_loss)
-                            avg_val_MSE = np.mean(avg_val_MSE)
-                            avg_val_SSIM = np.mean(avg_val_SSIM)
 
-                            val_PSNRs.append(avg_val_PSNR)
-                            val_losses.append(avg_val_loss)
-                            val_MSEs.append(avg_val_MSE)
-                            val_SSIMs.append(avg_val_SSIM)
+                                avg_val_PSNR = np.mean(avg_val_PSNR)
+                                avg_val_loss = np.mean(avg_val_loss)
+                                avg_val_MSE = np.mean(avg_val_MSE)
+                                avg_val_SSIM = np.mean(avg_val_SSIM)
 
-                            train_losses.append(train_loss.cpu().detach().numpy())
-                            train_PSNRs.append(train_PSNR)
-                            train_MSEs.append(train_MSE)
-                            train_SSIMs.append(train_SSIM)
+                                val_PSNRs.append(avg_val_PSNR)
+                                val_losses.append(avg_val_loss)
+                                val_MSEs.append(avg_val_MSE)
+                                val_SSIMs.append(avg_val_SSIM)
+                                scheduler.step(avg_val_loss)
 
-                            if index == len(dataloader_train)  - 1:
-                                    img_grid = output.data[:9]
-                                    img_grid = torchvision.utils.make_grid(img_grid)
-                                    real_grid = target.data[:9]
-                                    real_grid = torchvision.utils.make_grid(real_grid)
-                                    input_grid = model_input.data[:9,:3,:,:]
-                                    input_grid = torchvision.utils.make_grid(input_grid)
-                                    val_grid = output_val.data[:9]
-                                    val_grid = torchvision.utils.make_grid(val_grid)
-                                    #save_image(input_grid, '{}train_input_img.png'.format(img_directory))
-                                    #save_image(img_grid, '{}train_img_{}.png'.format(img_directory, epoch))
-                                    #save_image(real_grid, '{}train_real_img_{}.png'.format(img_directory, epoch))
-                                    #print('train images')
-                                    fig,ax  = plt.subplots(4)
-                                    fig.subplots_adjust(hspace=0.5)
-                                    ax[0].set_title('target')
-                                    ax[0].imshow(real_grid.cpu().numpy().transpose((1, 2, 0)))
-                                    ax[1].set_title('input')
-                                    ax[1].imshow(input_grid.cpu().numpy().transpose((1, 2, 0)))
-                                    ax[2].set_title('output_train')
-                                    ax[2].imshow(img_grid.cpu().numpy().transpose((1, 2, 0)))
-                                    ax[3].set_title('output_val')
-                                    ax[3].imshow(val_grid.cpu().numpy().transpose((1, 2, 0)))
-                                    #plt.show()
-                                    plt.savefig('{}train_output_target_img_{}.png'.format(img_directory, epoch))
-                                    plt.close()
+                                img_grid = output.data[:9]
+                                img_grid = torchvision.utils.make_grid(img_grid)
+                                real_grid = target.data[:9]
+                                real_grid = torchvision.utils.make_grid(real_grid)
+                                input_grid = model_input.data[:9,:3,:,:]
+                                input_grid = torchvision.utils.make_grid(input_grid)
+                                val_grid = output_val.data[:9]
+                                val_grid = torchvision.utils.make_grid(val_grid)
+                                #save_image(input_grid, '{}train_input_img.png'.format(img_directory))
+                                #save_image(img_grid, '{}train_img_{}.png'.format(img_directory, epoch))
+                                #save_image(real_grid, '{}train_real_img_{}.png'.format(img_directory, epoch))
+                                #print('train images')
+                                fig,ax  = plt.subplots(4)
+                                fig.subplots_adjust(hspace=0.5)
+                                ax[0].set_title('target')
+                                ax[0].imshow(real_grid.cpu().numpy().transpose((1, 2, 0)))
+                                ax[1].set_title('input')
+                                ax[1].imshow(input_grid.cpu().numpy().transpose((1, 2, 0)))
+                                ax[2].set_title('output_train')
+                                ax[2].imshow(img_grid.cpu().numpy().transpose((1, 2, 0)))
+                                ax[3].set_title('output_val')
+                                ax[3].imshow(val_grid.cpu().numpy().transpose((1, 2, 0)))
+                                #plt.show()
+                                plt.savefig('{}train_output_target_img_{}.png'.format(img_directory, epoch))
+                                plt.close()
 
                             pbar.update(1)
                 if epoch % print_every == 0:
