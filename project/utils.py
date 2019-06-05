@@ -35,7 +35,7 @@ def loadFilenames(data_path):
 
 class MonteCarloDataset(Dataset):
 
-    def __init__(self,data_path,patchify=True,patch_sz=(64,64),max_patches = 32):
+    def __init__(self,data_path,patchify=True,patch_sz=(128,128),max_patches = 32):
         self.data_path = data_path
         self.patchify = patchify
         self.image_list,self.feature_list,self.target_list = loadFilenames(data_path)

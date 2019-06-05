@@ -15,3 +15,5 @@ project/.ipynb_checkpoints
 project/__pycache__
 newenv
 *.pyc
+*.pyc
+*.pyc

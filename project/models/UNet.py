@@ -133,30 +133,49 @@ class UNet(nn.Module):
 		layer_dim_2 = layer_dim_1 * 2
 		layer_dim_3 = layer_dim_2 * 2
 		layer_dim_4 = layer_dim_3 * 2
+		layer_dim_5 = layer_dim_4 * 2
 
 		self.in_conv = nn.Sequential(
 			CONV_BN_RELU(in_ch,layer_dim_1),
 			CONV_BN_RELU(layer_dim_1,layer_dim_1))
+
 		self.down1 = downConv(layer_dim_1,layer_dim_2)
 		self.down2 = downConv(layer_dim_2,layer_dim_3)
-		self.down3 = downConv(layer_dim_3,layer_dim_3)
-		self.up1 = upConv(layer_dim_4,layer_dim_2)
-		self.up2 = upConv(layer_dim_3,layer_dim_1)
-		self.up3 = upConv(layer_dim_2,layer_dim_1)
+		self.down3 = downConv(layer_dim_3,layer_dim_4)
+		self.down4 = downConv(layer_dim_4,layer_dim_4)
+		self.up1 = upConv(layer_dim_5,layer_dim_3)
+		self.up2 = upConv(layer_dim_4,layer_dim_2)
+		self.up3 = upConv(layer_dim_3,layer_dim_1)
+		self.up4 = upConv(layer_dim_2,layer_dim_1)
+		# self.down1 = downConv(layer_dim_1,layer_dim_2)
+		# self.down2 = downConv(layer_dim_2,layer_dim_3)
+		# self.down3 = downConv(layer_dim_3,layer_dim_3)
+		# self.up1 = upConv(layer_dim_4,layer_dim_2)
+		# self.up2 = upConv(layer_dim_3,layer_dim_1)
+		# self.up3 = upConv(layer_dim_2,layer_dim_1)
 		self.out_conv = nn.Sequential(
 			CONV_BN_RELU(layer_dim_1,layer_dim_1),
 			CONV_FINAL(layer_dim_1,out_ch))
 
 	def forward(self,x): 
+		# layer1 = self.in_conv(x)
+		# layer2 = self.down1(layer1)
+		# layer3 = self.down2(layer2)
+		# layer4 = self.down3(layer3)
+		# output = self.up1(layer4,layer3)
+		# output = self.up2(output,layer2)
+		# output = self.up3(output,layer1)
+		# output = self.out_conv(output)
 		layer1 = self.in_conv(x)
 		layer2 = self.down1(layer1)
 		layer3 = self.down2(layer2)
 		layer4 = self.down3(layer3)
-		output = self.up1(layer4,layer3)
-		output = self.up2(output,layer2)
-		output = self.up3(output,layer1)
+		layer5 = self.down4(layer4)
+		output = self.up1(layer5,layer4)
+		output = self.up2(output,layer3)
+		output = self.up3(output,layer2)
+		output = self.up4(output,layer1)
 		output = self.out_conv(output)
-
 		return output
 
 if __name__ == "__main__":

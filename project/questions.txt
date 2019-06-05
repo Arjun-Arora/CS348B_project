@@ -2,3 +2,8 @@ Are we using BSDF::rho() correctly?
 How does time factor into AnimatedTransform? 
 What is ray.time vs ray.t? 
 How do we get multiple outputs with animatedTransform
+
+2-3 convolutions per stage
+4 stages at least
+32 filters at top
+128 image inputs 
