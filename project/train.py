@@ -32,7 +32,7 @@ def create_args():
     #                 help='number of epochs')
     parser.add_argument('--batch_size',dest = 'batch_size',default = 8, type=int,
                       help='size of batch')
-    parser.add_argument('--lr',dest = 'lr',default = 0.01, type=float,
+    parser.add_argument('--lr',dest = 'lr',default = 0.001, type=float,
                       help='learning rate')
     parser.add_argument('--gpu',dest = 'gpu',default = False, action="store_true",
                         help='whether to use gpu')
@@ -131,7 +131,7 @@ def train(args,Dataset):
                             features = torch.reshape(features,(-1,C_feat,H,W))
                             albedo = features[:,3:,:,:]
                             albedo = albedo.to(device)
-                            eps = torch.tensor(1e-6)
+                            eps = torch.tensor(1e-2)
                             eps = eps.to(device)
                             model_input = model_input.to(device)
                             model_input /= (albedo + eps)
@@ -175,7 +175,7 @@ def train(args,Dataset):
                                             features_val = torch.reshape(features_val,(-1,C_feat,H,W))
                                             albedo = features_val[:,3:,:,:]
                                             albedo = albedo.to(device)
-                                            eps = torch.tensor(1e-6)
+                                            eps = torch.tensor(1e-2)
                                             eps = eps.to(device)
                                             model_input_val = model_input_val.to(device)
                                             model_input_val /= (albedo + eps)
