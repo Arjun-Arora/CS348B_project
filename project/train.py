@@ -30,7 +30,7 @@ def create_args():
     parser = argparse.ArgumentParser(description = "hyperparameters for training")
     # parser.add_argument('--epochs',dest = 'epochs',default = 5, type=int,
     #                 help='number of epochs')
-    parser.add_argument('--batch_size',dest = 'batch_size',default = 16, type=int,
+    parser.add_argument('--batch_size',dest = 'batch_size',default = 8, type=int,
                       help='size of batch')
     parser.add_argument('--lr',dest = 'lr',default = 0.01, type=float,
                       help='learning rate')
@@ -73,8 +73,8 @@ def train(args,Dataset):
     in_ch = int(args.in_ch)
     val_split = args.val_split
     img_directory = args.image_directory
-    model = MW_Unet(in_ch=in_ch)
-    #model = UNet(in_ch=in_ch)
+    #model = MW_Unet(in_ch=in_ch)
+    model = UNet(in_ch=in_ch)
     #model = model
     model.to(device)
     model.apply(init_weights)
