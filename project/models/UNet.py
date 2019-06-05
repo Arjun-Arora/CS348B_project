@@ -45,7 +45,7 @@ class CONV_BN_RELU(nn.Module):
 		pad = int((-1 + filter_sz)/2)
 		self.forward_prop = nn.Sequential(
 			nn.Conv2d(in_ch,out_ch,filter_sz,padding = pad),
-			nn.BatchNorm2d(out_ch),
+			#nn.BatchNorm2d(out_ch),
 			nn.ReLU()
 			)
 	def forward(self,x):
@@ -129,11 +129,11 @@ class UNet(nn.Module):
 	"""
 	def __init__(self,in_ch = 3,out_ch = 3):
 		super().__init__()
-		layer_dim_1 = 16 
-		layer_dim_2 = layer_dim_1 * 2
-		layer_dim_3 = layer_dim_2 * 2
-		layer_dim_4 = layer_dim_3 * 2
-		layer_dim_5 = layer_dim_4 * 2
+		layer_dim_1 = 32 
+		layer_dim_2 = layer_dim_1 + 32
+		layer_dim_3 = layer_dim_2 + 32 
+		layer_dim_4 = layer_dim_3 + 32 
+		layer_dim_5 = layer_dim_4 + 32
 
 		self.in_conv = nn.Sequential(
 			CONV_BN_RELU(in_ch,layer_dim_1),
@@ -142,11 +142,13 @@ class UNet(nn.Module):
 		self.down1 = downConv(layer_dim_1,layer_dim_2)
 		self.down2 = downConv(layer_dim_2,layer_dim_3)
 		self.down3 = downConv(layer_dim_3,layer_dim_4)
-		self.down4 = downConv(layer_dim_4,layer_dim_4)
-		self.up1 = upConv(layer_dim_5,layer_dim_3)
-		self.up2 = upConv(layer_dim_4,layer_dim_2)
-		self.up3 = upConv(layer_dim_3,layer_dim_1)
-		self.up4 = upConv(layer_dim_2,layer_dim_1)
+		self.down4 = downConv(layer_dim_4,layer_dim_5)
+		self.down5 = downConv(layer_dim_5,layer_dim_5)
+		self.up1 = upConv(layer_dim_5 * 2, layer_dim_4)
+		self.up2 = upConv(layer_dim_4 * 2 ,layer_dim_3)
+		self.up3 = upConv(layer_dim_3 * 2,layer_dim_2)
+		self.up4 = upConv(layer_dim_2 * 2 ,layer_dim_1)
+		self.up5 = upConv(layer_dim_1 * 2,layer_dim_1)
 		# self.down1 = downConv(layer_dim_1,layer_dim_2)
 		# self.down2 = downConv(layer_dim_2,layer_dim_3)
 		# self.down3 = downConv(layer_dim_3,layer_dim_3)
@@ -171,10 +173,12 @@ class UNet(nn.Module):
 		layer3 = self.down2(layer2)
 		layer4 = self.down3(layer3)
 		layer5 = self.down4(layer4)
-		output = self.up1(layer5,layer4)
-		output = self.up2(output,layer3)
-		output = self.up3(output,layer2)
-		output = self.up4(output,layer1)
+		layer6 = self.down5(layer5)
+		output = self.up1(layer6,layer5)
+		output = self.up2(output,layer4)
+		output = self.up3(output,layer3)
+		output = self.up4(output,layer2)
+		output = self.up5(output,layer1)
 		output = self.out_conv(output)
 		return output
 
