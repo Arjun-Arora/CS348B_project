@@ -320,7 +320,10 @@ def train(args,Dataset):
 
 if __name__ == "__main__":
     patchify = True
-    dataset_dir = "./contemporary-bathroom_data/"
-    Dataset = utils.MonteCarloDataset(dataset_dir,patchify=patchify)
+    dataset_dir0 = "./contemporary-bathroom_data/"
+    dataset_dir1 = "./villa_data/"
+    Dataset0 = utils.MonteCarloDataset(dataset_dir0,patchify=patchify)
+    Dataset1 = utils.MonteCarloDataset(dataset_dir1,patchify=patchify)
+    torch.utils.data.ConcatDataset([Dataset0,Dataset1])
     args = create_args()
     train(args, Dataset)

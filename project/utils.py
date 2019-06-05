@@ -149,7 +149,7 @@ def get_SSIM(model_output, target):
 
 if __name__ =="__main__":
     patchify = False
-    dataset_dir = "./contemporary-bathroom_data/"
+    dataset_dir = "./villa_data/"
     Dataset = MonteCarloDataset(dataset_dir,patchify=patchify)
     idx = np.random.randint(0,len(Dataset))
     sample = Dataset[idx]
