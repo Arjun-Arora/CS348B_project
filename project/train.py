@@ -95,10 +95,8 @@ def train(args,Dataset):
     train_sampler = SubsetRandomSampler(train_indices)
     valid_sampler = SubsetRandomSampler(val_indices)
 
-    dataloader_train = torch.utils.data.DataLoader(dataset_total, batch_size=batch_size, 
-                                                                                 sampler=train_sampler)
-    dataloader_val = torch.utils.data.DataLoader(dataset_total, batch_size=batch_size,
-                                                                                            sampler=valid_sampler)
+    dataloader_train = torch.utils.data.DataLoader(dataset_total, batch_size=batch_size,sampler=train_sampler,num_workers=4)
+    dataloader_val = torch.utils.data.DataLoader(dataset_total, batch_size=batch_size,sampler=valid_sampler,num_workers=2)
 
     print("length of train set: ", len(train_indices))
     print("length of val set: ", len(val_indices))
