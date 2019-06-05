@@ -39,7 +39,7 @@ class MonteCarloDataset(Dataset):
         self.data_path = data_path
         self.patchify = patchify
         self.image_list,self.feature_list,self.target_list = loadFilenames(data_path)
-
+        #print(len(self.image_list))
         assert len(self.image_list) == len(self.target_list) == len(self.feature_list)
 
         self.length = len(self.image_list)
@@ -149,7 +149,9 @@ def get_SSIM(model_output, target):
 
 if __name__ =="__main__":
     patchify = False
-    dataset_dir = "./villa_data/"
+    #dataset_dir = "./contemporary-bathroom_data/"
+    dataset_dir = "./villa_data"
+    #dataset_dir = './breakfast-sample'
     Dataset = MonteCarloDataset(dataset_dir,patchify=patchify)
     idx = np.random.randint(0,len(Dataset))
     sample = Dataset[idx]

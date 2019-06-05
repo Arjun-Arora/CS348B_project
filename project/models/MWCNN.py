@@ -24,11 +24,11 @@ class WCNN(nn.Module):
         # 4 * input channels since DwT creates 4 outputs per image
         modules = []
         modules.append(nn.Conv2d(4 * in_ch, out_ch, kernel_size=3, padding=1))
-        modules.append(nn.BatchNorm2d(num_features=out_ch))
+        #modules.append(nn.BatchNorm2d(num_features=out_ch))
         modules.append(nn.ReLU())
         for i in range(num_conv):
             modules.append(nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1))
-            modules.append(nn.BatchNorm2d(num_features=out_ch))
+            #modules.append(nn.BatchNorm2d(num_features=out_ch))
             modules.append(nn.ReLU())
         self.conv = nn.Sequential(*modules)
 
@@ -60,10 +60,10 @@ class IWCNN(nn.Module):
         modules = []
         for i in range(num_conv):
             modules.append(nn.Conv2d(in_ch, in_ch, kernel_size=3, padding=1))
-            modules.append(nn.BatchNorm2d(num_features=in_ch))
+            #modules.append(nn.BatchNorm2d(num_features=in_ch))
             modules.append(nn.ReLU())
         modules.append(nn.Conv2d(in_ch, internal_ch, kernel_size=3, padding=1))
-        modules.append(nn.BatchNorm2d(num_features=internal_ch))
+        #modules.append(nn.BatchNorm2d(num_features=internal_ch))
         modules.append(nn.ReLU())
         self.conv = nn.Sequential(*modules)
 

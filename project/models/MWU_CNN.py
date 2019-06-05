@@ -52,7 +52,7 @@ class MW_Unet(nn.Module):
     input:N,C,H,W
     output: N,C,H,W
     """
-    def __init__(self,num_conv=2,in_ch=1,out_ch=3,channel_1=16,channel_2=32,channel_3 = 64):
+    def __init__(self,num_conv=2,in_ch=1,out_ch=3,channel_1=32,channel_2=64,channel_3 = 96,channel_4 = 128):
         '''
         :param: num_conv per contraction and expansion layer, how many extra conv-batch-relu layers wanted
         :param in_ch: number of input channels expected
@@ -66,9 +66,11 @@ class MW_Unet(nn.Module):
         self.cnn_1 = WCNN(in_ch=in_ch,out_ch=channel_1,num_conv=num_conv) #output N,160,H/2,W/2
         self.cnn_2 = WCNN(in_ch=channel_1,out_ch=channel_2,num_conv=num_conv)
         self.cnn_3 = WCNN(in_ch=channel_2,out_ch=channel_3,num_conv=num_conv)
-        self.cnn_4 = WCNN(in_ch=channel_3,out_ch=channel_3,num_conv=num_conv)
+        self.cnn_4 = WCNN(in_ch=channel_3,out_ch=channel_4,num_conv=num_conv)
+        self.cnn_5 = WCNN(in_ch = channel_4,out_ch=channel_4,num_conv=num_conv)
 
-        self.icnn_4 =IWCNN(in_ch=channel_3,internal_ch=4*channel_3,num_conv=num_conv)
+        self.icnn_5 = IWCNN(in_ch=channel_4,internal_ch=4*channel_4,num_conv=num_conv)
+        self.icnn_4 =IWCNN(in_ch= 2*channel_4,internal_ch=4*channel_3,num_conv=num_conv)
         self.icnn_3 = IWCNN(in_ch=2*channel_3,internal_ch=4*channel_2,num_conv=num_conv)
         self.icnn_2 = IWCNN(in_ch=2*channel_2,internal_ch=4*channel_1,num_conv=num_conv) #expecting 2*256 because of skip connection
         self.icnn_1 = IWCNN(in_ch=2*channel_1,internal_ch=self.in_ch*4,num_conv=num_conv) # output N,in_ch,H,W
@@ -79,8 +81,9 @@ class MW_Unet(nn.Module):
         x2 = self.cnn_2(x1)
         x3 = self.cnn_3(x2)
         x4 = self.cnn_4(x3)
-
-        y0 = self.icnn_4(x4)
+        x5 = self.cnn_5(x4)
+        y_0 = self.icnn_5(x5)
+        y0 = self.icnn_4(torch.cat((y_0,x4),dim=1))
         y1 = self.icnn_3(torch.cat((y0,x3),dim=1))
         y2 = self.icnn_2(torch.cat((y1,x2),dim=1))
         y3 = self.icnn_1(torch.cat((y2,x1),dim=1))
