@@ -32,20 +32,22 @@ def load_saved_model(model, map_location):
     model.load_state_dict(checkpoint['model_state_dict'])
 
 def evaluate(model, device, model_input, features, target):
+    model.eval()
     model = model.to(device)
     og_input = np.copy(model_input)
+
     with torch.no_grad():
         model_input = torch.tensor(model_input)
         features = torch.tensor(features)
         target = torch.tensor(target)
         C, H, W = model_input.shape
-        model_input = torch.reshape(model_input, (1, C, H, W))
+        model_input = torch.unsqueeze(model_input, 0)
         C_feat, H, W = features.shape
-        features = torch.reshape(features, (1, C_feat, H, W))
+        features = torch.unsqueeze(features, 0)
 
         albedo = features[:, 3:, :, :]
         albedo = albedo.to(device)
-        eps = torch.tensor(1e-6)
+        eps = torch.tensor(1e-2)
         eps = eps.to(device)
         model_input = model_input.to(device)
         model_input /= (albedo + eps)
@@ -56,14 +58,22 @@ def evaluate(model, device, model_input, features, target):
         output *= (albedo + eps)
 
         C, H, W = target.shape
-        target = torch.reshape(target, (1, C, H, W))
+        target = torch.unsqueeze(target, 0)
         target = target.to(device)
         PSNR = utils.get_PSNR(output, target)
         MSE = utils.get_MSE(output, target)
         SSIM = utils.get_SSIM(output, target)
         print("PSNR: %.10f, MSE: %.10f, SSIM: %.10f" % (PSNR, MSE, SSIM))
-
-        plt.imsave(image_name + "_denoised.png", np.transpose(np.squeeze(output.cpu().numpy(), axis=0), (1, 2, 0)))
+        #print(output.cpu().numpy())
+        output = np.transpose(np.squeeze(output.cpu().numpy(), axis=0), (1, 2, 0))
+        #tonemapReinhard = cv2.createTonemapReinhard(2.2)
+        #ldrDurand = tonemapReinhard.process(output)
+        #output_8bit = np.clip(ldrDurand * 255, 0, 255).astype('uint8')
+        #cv2.imwrite(image_name + "_denoised.png", output_8bit)
+        #output = (((output - np.min(output))/np.ptp(output)) * 255).astype(np.int32)
+        #output = (output - np.min(output))/np.ptp(output)
+        output = output**2.2
+        plt.imsave(image_name + "_denoised.png", output)
         '''
         fig,ax  = plt.subplots(2, 2)
         fig.subplots_adjust(hspace=0.5)
@@ -82,23 +92,26 @@ def evaluate(model, device, model_input, features, target):
 
 if __name__ == "__main__":
     model = UNet(in_ch=9)
+    #model = MW_Unet(in_ch=9)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("device:{}".format(device))
     load_saved_model(model, map_location=device)
-
     input_img = cv2.imread(image_dir + image_name + "_64.exr", cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
     input_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2RGB)
     feature_map = np.load(image_dir + "feature_map_" + image_name[-1] + "_64.npy")
+    feature_map = np.nan_to_num(feature_map)
     target_img = cv2.imread(image_dir + image_name + "_4096.exr", cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
     target_img = cv2.cvtColor(target_img, cv2.COLOR_BGR2RGB)
     
     depth_map = feature_map[:, :, 2]
+    #print(feature_map[:,:,3:])
+    feature_map[:,:,3:] = feature_map[:,:,3:]**(.2)
     depth_map = depth_map/np.max(depth_map)
     target_img = np.transpose(target_img,(2, 0, 1))
     input_img = np.transpose(input_img,(2, 0, 1))
     feature_map = np.transpose(feature_map,(2, 0, 1))
 
-    input_img = input_img**(1/2.2)
-    target_img = target_img**(1/2.2)
+    input_img = input_img**(.2)
+    target_img = target_img**(.2)
 
     evaluate(model, device, input_img, feature_map, target_img)

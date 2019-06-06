@@ -82,7 +82,7 @@ def train(args,Dataset):
 
 
     #criterion = nn.MSELoss()
-    criterion = torch.nn.SmoothL1Loss()
+    criterion = torch.nn.L1Loss()
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
 
         ######################################### Loading Data ##########################################
@@ -104,7 +104,7 @@ def train(args,Dataset):
     print("length of val set: ", len(val_indices))
 
     #best_val_PSNR = 0.0
-    best_val_MSE = 100.0 
+    best_val_MSE, best_val_PSNR, best_val_SSIM = 100.0, -1, -1
 
     train_PSNRs = []
     train_losses = []
@@ -238,14 +238,14 @@ def train(args,Dataset):
                         print("Epoch: {}, Loss: {}, Train MSE: {} Train PSNR: {}, Train SSIM: {}".format(epoch, train_loss,train_MSE, train_PSNR,train_SSIM))
                         print("Epoch: {}, Avg Val Loss: {}, Avg Val MSE: {}, Avg Val PSNR: {}, Avg Val SSIM: {}".format(epoch, avg_val_loss,avg_val_MSE, avg_val_PSNR,avg_val_SSIM))
                         plt.figure()
-                        plt.plot(np.linspace(0,epoch,len(train_losses)),train_losses)
+                        plt.semilogy(np.linspace(0,epoch,len(train_losses)),train_losses)
                         plt.xlabel("Epoch")
                         plt.ylabel("Loss")
                         plt.savefig("{}train_loss.png".format(img_directory))
                         plt.close()
 
                         plt.figure()
-                        plt.plot(np.linspace(0,epoch,len(val_losses)),val_losses)
+                        plt.semilogy(np.linspace(0,epoch,len(val_losses)),val_losses)
                         plt.xlabel("Epoch")
                         plt.ylabel("Loss")
                         plt.savefig("{}val_loss.png".format(img_directory))
@@ -266,14 +266,14 @@ def train(args,Dataset):
                         plt.close()
 
                         plt.figure()
-                        plt.plot(np.linspace(0,epoch,len(train_MSEs)),train_MSEs)
+                        plt.semilogy(np.linspace(0,epoch,len(train_MSEs)),train_MSEs)
                         plt.xlabel("Epoch")
                         plt.ylabel("MSE")
                         plt.savefig("{}train_MSE.png".format(img_directory))
                         plt.close()
 
                         plt.figure()
-                        plt.plot(np.linspace(0,epoch,len(val_MSEs)),val_MSEs)
+                        plt.semilogy(np.linspace(0,epoch,len(val_MSEs)),val_MSEs)
                         plt.xlabel("Epoch")
                         plt.ylabel("MSE")
                         plt.savefig("{}val_MSE.png".format(img_directory))
@@ -296,7 +296,7 @@ def train(args,Dataset):
                         
 
                 if best_val_MSE > avg_val_MSE:
-                        best_val_MSE = avg_val_MSE
+                        best_val_MSE, best_val_PSNR, best_val_SSIM = avg_val_MSE, avg_val_PSNR, avg_val_SSIM
                         print("new best Avg Val MSE: {}".format(best_val_MSE))
                         print("Saving model to {}".format(save_path))
                         torch.save({'epoch': epoch,
@@ -319,6 +319,7 @@ def train(args,Dataset):
 
             print("Training completed.")
 
+    print("Best MSE: %.10f, Best PSNR: %.10f, Best SSIM: %.10f" % (best_val_MSE, best_val_PSNR, best_val_SSIM))
     return (train_losses, train_PSNRs, val_losses, val_PSNRs, best_val_MSE)
 
 if __name__ == "__main__":

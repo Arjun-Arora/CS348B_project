@@ -55,6 +55,7 @@ class MonteCarloDataset(Dataset):
         #print(input_img.shape)
         #print(input_img.dtype)
         feature_map = np.load(os.path.join(self.data_path,self.feature_list[idx]))
+        feature_map = np.nan_to_num(feature_map)
         target_img = cv2.imread(os.path.join(self.data_path,self.target_list[idx]),cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
         target_img = cv2.cvtColor(target_img,cv2.COLOR_BGR2RGB)
 
