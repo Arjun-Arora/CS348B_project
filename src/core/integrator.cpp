@@ -346,12 +346,12 @@ void SamplerIntegrator::Render(const Scene &scene) {
                     // value
                     arena.Reset();
                 } while (tileSampler->StartNextSample());
-
-                info[pixel.x][pixel.y][0] = normalX/numSamples;
-                info[pixel.x][pixel.y][1] = normalY/numSamples;
-                info[pixel.x][pixel.y][2] = depth/numSamples;
+    
+                info[pixel.x][pixel.y][0] = (numSamples == 0) ? 0 : normalX/numSamples;
+                info[pixel.x][pixel.y][1] = (numSamples == 0) ? 0 : normalY/numSamples;
+                info[pixel.x][pixel.y][2] = (numSamples == 0) ? 0 : depth/numSamples;
                 for (int c = 0; c < 3; c++)
-                    albedo[pixel.x][pixel.y][c] = rgb[c]/numSamples;
+                    albedo[pixel.x][pixel.y][c] = (numSamples == 0) ? 0 : rgb[c]/numSamples;
             }
             LOG(INFO) << "Finished image tile " << tileBounds;
 
