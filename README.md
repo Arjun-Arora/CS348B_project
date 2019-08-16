@@ -2,7 +2,7 @@
 ### Arjun Arora & Eric Xu
 
 ## NOTE: 
-All project files not related to pbrt extensions (models, dataset, etc) are contained in the `projects` directory 
+All project files not related to pbrt extensions (models, dataset, etc) are contained in the `project` directory 
 
 ## Introduction
 Monte Carlo Integration is the standard technique used in ray tracing to produce physically accurate lighting calculations. While there are a variety of sampling techniques to deal with the variance resulting from an inherently stochastic process (stratified sampling, importance sampling, etc), one still needs on the order of 10<sup>3</sup> to 10<sup>6</sup> rays per pixel (depending on scene complexity) to produce perfectly lit scenes. However, as shown in lecture, increasing ray counts does not scale linearly with perceptual increase in quality and we hit a regime of “diminishing returns” as we increase ray counts from 10<sup>2</sup> to 10<sup>N</sup>. Instead of tracing these many rays per image, we propose the use of a deep neural network to accelerate image space denoising with features generated from the pbrt framework to produce high quality images from noisy low ray count inputs.
