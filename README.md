@@ -82,7 +82,7 @@ Finally, running the model on the sportscar test image, we achieve the following
 
 <img src="http://graphics.stanford.edu/courses/cs348b-19-spring-content/article_images/226_11.jpg" width="80%">
 
-The image has a RMSE of 0.0259, PSNR of 31.736, and SSIM of 0.938. Because this image is outside the distribution of images that make up our training and validation set, the results are qualitatively worse than the bathroom image, even if the evaluation metrics seem close to the bathroom results. While we see most of the noise is gone, the reconstruction results on the highlights of the car leave some room to be desired. The highlights on the hood of the car seemed to be somewhat brown, clearly not matching the red color of the car. As well, there is some medium frequency noise on the door of the car as well as some on the wheels. This indicates that while our model performs very well within the distribution of the villa and bathroom scenes, it may have overfit slightly to that distribution. Moving forward, having a larger sample of scenes and perhaps some more regularization procedures would produce better results on a test image.
+The image has a RMSE of 0.0259, PSNR of 31.736, and SSIM of 0.938. Because this image is outside the distribution of images that make up our training and validation set, the results are qualitatively worse than the bathroom image, even if the evaluation metrics seem close to the bathroom results. While we see most of the noise is gone, the reconstruction results on the highlights of the car leave some room to be desired. The highlights on the hood of the car seemed to be somewhat brown, clearly not matching the red color of the car. As well, there is some meedium frequency noise on the door of the car as well as some on the wheels. This indicates that while our model performs very well within the distribution of the villa and bathroom scenes, it may have overfit slightly to that distribution. Moving forward, having a larger sample of scenes and perhaps some more regularization procedures would produce better results on a test image.
 
 <img src="http://graphics.stanford.edu/courses/cs348b-19-spring-content/article_images/226_12.jpg" width="80%">
 
@@ -108,3 +108,5 @@ Link to code: https://github.com/Arjun-Arora/CS348B_project
 2. Liu, Pengju, et al. "Multi-level wavelet-CNN for image restoration." Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition Workshops. 2018.
 
 3. Scenes for pbrt-v3: https://pbrt.org/scenes-v3.html
+
+4. The implementation of the pure wavelet layer can be found here: https://github.com/fbcotter/pytorch_wavelets
